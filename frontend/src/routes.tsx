@@ -2,6 +2,8 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PrivateRoute, PublicOnlyRoute } from '@/components/layout/RouteGuards';
 import { LoginPage } from '@/pages/Login';
+import { AccountsPage } from '@/pages/Accounts';
+import { CategoriesPage } from '@/pages/Categories';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { RegisterPage } from '@/pages/Register';
 
@@ -21,9 +23,9 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <PlaceholderPage title="Dashboard" /> },
           { path: 'movimentos', element: <PlaceholderPage title="Movimentos" /> },
-          { path: 'contas', element: <PlaceholderPage title="Contas" /> },
+          { path: 'contas', element: <AccountsPage /> },
           { path: 'custos-fixos', element: <PlaceholderPage title="Custos fixos" /> },
-          { path: 'categorias', element: <PlaceholderPage title="Categorias" /> },
+          { path: 'categorias', element: <CategoriesPage /> },
         ],
       },
     ],

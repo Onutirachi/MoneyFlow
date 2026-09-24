@@ -10,7 +10,7 @@ export function ColorPicker({
   onChange: (color: string) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Cor">
+    <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Cor">
       {SWATCHES.map((color) => (
         <button
           key={color}

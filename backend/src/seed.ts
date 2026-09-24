@@ -32,7 +32,7 @@ const categoryId = (name: string) => {
 const wallet = accounts.create(userId, {
   name: 'Carteira Física',
   color: '#16a34a',
-  initialBalance: 30000,
+  initialBalance: 180000,
   methods: ['DINHEIRO'],
 });
 const xpto = accounts.create(userId, {
@@ -44,7 +44,7 @@ const xpto = accounts.create(userId, {
 const digital = accounts.create(userId, {
   name: 'Banco Digital',
   color: '#9333ea',
-  initialBalance: 80000,
+  initialBalance: 350000,
   methods: ['PIX', 'CREDITO'],
 });
 

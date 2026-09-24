@@ -17,4 +17,5 @@ Criar um projeto separado `backend/` em Node + Express + TypeScript que implemen
 ## Consequências
 - O front depende apenas do contrato HTTP; trocar o backend não exige mudanças no front.
 - Não há concorrência real nem transações — aceitável para mock com um usuário por vez.
+- O cache em memória é recarregado quando o `mtime` do arquivo muda (ex.: `npm run seed` com o servidor rodando).
 - `docs/api.md` é a fonte da verdade e precisa ser mantido.

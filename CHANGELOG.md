@@ -58,3 +58,9 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Portas padrão: backend **3334**, frontend **5174** (3333 e 5173 já estão em uso por outro projeto na máquina).
 - Tema claro/escuro com provider próprio no lugar de `next-themes`.
 - Backend encerra com mensagem clara quando a porta está ocupada.
+
+## [Etapa 10] — 2026-09-23
+### Adicionado
+- Frontend: telas de contas (saldo, métodos de pagamento) e categorias (entradas/saídas).
+### Alterado
+- Backend: `jsonDb` recarrega o arquivo quando ele muda por fora; seed com saldos iniciais realistas.
