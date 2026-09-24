@@ -51,7 +51,7 @@ Login de demonstração: **demo@demo.com** / **123456**
 # em cada projeto
 npm run typecheck && npm run lint && npm run build
 # backend
-npm test          # 21 testes de integração
+npm test          # 22 testes de integração
 ```
 
 ## Documentação
