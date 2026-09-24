@@ -90,3 +90,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Gráficos: rótulo do topo do eixo não é mais comprimido; concordância "1 mês".
 ### Adicionado
 - README com funcionalidades e mapa da documentação; verificação end-to-end com usuário novo.
+
+## [Correção] — 2026-09-24
+### Corrigido
+- Login e cadastro falhavam quando o e-mail tinha espaço no começo ou no fim, o que é comum com autocompletar e teclado de celular. No Zod 4, `z.email().trim()` valida **antes** de aplicar o trim. Agora é `z.string().trim().pipe(z.email())` no backend e no frontend, com teste novo (22 testes).

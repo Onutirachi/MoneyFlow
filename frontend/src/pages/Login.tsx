@@ -12,7 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getErrorMessage } from '@/lib/api';
 
 const schema = z.object({
-  email: z.email('Informe um e-mail válido'),
+  email: z.string().trim().pipe(z.email('Informe um e-mail válido')),
   password: z.string().min(1, 'Informe a senha'),
 });
 type FormValues = z.infer<typeof schema>;

@@ -14,7 +14,7 @@ import { getErrorMessage } from '@/lib/api';
 const schema = z
   .object({
     name: z.string().trim().min(2, 'Informe seu nome'),
-    email: z.email('Informe um e-mail válido'),
+    email: z.string().trim().pipe(z.email('Informe um e-mail válido')),
     password: z.string().min(6, 'A senha precisa ter ao menos 6 caracteres'),
     confirm: z.string(),
   })

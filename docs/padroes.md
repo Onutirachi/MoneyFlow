@@ -7,6 +7,7 @@
 - **Idioma:** identificadores em inglês; UI, docs e commits em pt-BR.
 - **Dinheiro:** inteiro em centavos (`amount: 12990` = R$ 129,90). Nunca `float` para dinheiro.
 - **Datas:** strings ISO `YYYY-MM-DD` (data) e `YYYY-MM` (mês). Manipulação via utilitários (`utils/date.ts` no back, `lib/date.ts` no front) — nada de aritmética de datas espalhada.
+- **Zod 4:** transformações (`trim`, `toLowerCase`) precisam vir ANTES da validação de formato: `z.string().trim().pipe(z.email())`, nunca `z.email().trim()`.
 - **Enums de domínio** como union types de string: `'ENTRADA' | 'SAIDA'`, `'DINHEIRO' | 'PIX' | 'CREDITO' | 'DEBITO'`.
 
 ## Backend

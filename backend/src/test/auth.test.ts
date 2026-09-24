@@ -59,4 +59,15 @@ describe('auth', () => {
     const badToken = await api.request('GET', '/auth/me', { token: 'abc' });
     assert.equal(badToken.status, 401);
   });
+
+  it('aceita e-mail com espaços nas pontas (autocompletar/teclado)', async () => {
+    await api.request('POST', '/auth/register', {
+      body: { name: 'Bia', email: 'bia@test.com', password: '123456' },
+    });
+    const res = await api.request<{ token: string }>('POST', '/auth/login', {
+      body: { email: '  Bia@Test.com ', password: '123456' },
+    });
+    assert.equal(res.status, 200);
+    assert.ok(res.body.token);
+  });
 });
