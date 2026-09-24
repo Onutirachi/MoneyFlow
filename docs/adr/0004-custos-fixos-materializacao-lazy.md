@@ -1,6 +1,6 @@
 # 0004 — Custos fixos com materialização lazy e idempotente
 
-- **Status:** Aceita
+- **Status:** Aceita (regra de edição substituída pela [0006](0006-custos-fixos-edicao-regenera-futuro.md))
 - **Data:** 2026-09-23
 
 ## Contexto

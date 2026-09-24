@@ -71,3 +71,10 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Formulário com métodos limitados à conta, parcelamento com prévia e edição/exclusão por parcela ou grupo.
 ### Corrigido
 - `MoneyInput`: a digitação sempre entra no final do número, independentemente da posição do cursor.
+
+## [Etapa 12] — 2026-09-23
+### Adicionado
+- Frontend: tela de custos fixos com pausa/reativação, período e resumo mensal.
+- Selects compartilhados de conta, método e categoria (`EntitySelects`) e o hook `useAccountMethodSync`.
+### Alterado
+- Backend (ADR 0006): editar, pausar ou excluir um custo fixo regenera as ocorrências futuras já geradas.

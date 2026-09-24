@@ -1,6 +1,7 @@
 import './setup.js';
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
+import { addMonths, currentMonth } from '../utils/date.js';
 import { registerUser, startTestApi, type TestApi } from './helpers.js';
 
 interface MovementRes {
@@ -115,5 +116,44 @@ describe('custos fixos', () => {
       feb.body.filter((m) => m.recurringId).map((m) => m.description),
       ['Curso'],
     );
+  });
+
+  it('editar, pausar e excluir regeneram só as ocorrências futuras', async () => {
+    const next = addMonths(currentMonth(), 1);
+    const later = addMonths(currentMonth(), 3);
+    const created = await api.request<{ id: string }>('POST', '/recurring', {
+      token,
+      body: rent({ description: 'Futuro', startMonth: next, dayOfMonth: 5 }),
+    });
+    const futureOf = async (month: string) =>
+      (await api.request<MovementRes[]>('GET', `/movements?month=${month}`, { token })).body.filter(
+        (m) => m.recurringId === created.body.id,
+      );
+
+    assert.equal((await futureOf(later)).length, 1); // gera next..later
+    assert.equal((await futureOf(next))[0]!.amount, 150000);
+
+    await api.request('PUT', `/recurring/${created.body.id}`, {
+      token,
+      body: rent({ description: 'Futuro', startMonth: next, dayOfMonth: 5, amount: 99000 }),
+    });
+    const nextAfterEdit = await futureOf(next);
+    assert.equal(nextAfterEdit.length, 1);
+    assert.equal(nextAfterEdit[0]!.amount, 99000);
+
+    await api.request('PUT', `/recurring/${created.body.id}`, {
+      token,
+      body: rent({ description: 'Futuro', startMonth: next, dayOfMonth: 5, active: false }),
+    });
+    assert.equal((await futureOf(later)).length, 0);
+
+    await api.request('PUT', `/recurring/${created.body.id}`, {
+      token,
+      body: rent({ description: 'Futuro', startMonth: next, dayOfMonth: 5 }),
+    });
+    assert.equal((await futureOf(later)).length, 1);
+    await api.request('DELETE', `/recurring/${created.body.id}`, { token });
+    const all = await api.request<MovementRes[]>('GET', `/movements?month=${later}`, { token });
+    assert.equal(all.body.filter((m) => m.description === 'Futuro').length, 0);
   });
 });

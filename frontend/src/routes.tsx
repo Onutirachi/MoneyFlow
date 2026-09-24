@@ -6,6 +6,7 @@ import { MovementsPage } from '@/pages/Movements';
 import { AccountsPage } from '@/pages/Accounts';
 import { CategoriesPage } from '@/pages/Categories';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
+import { RecurringPage } from '@/pages/Recurring';
 import { RegisterPage } from '@/pages/Register';
 
 export const router = createBrowserRouter([
@@ -25,7 +26,7 @@ export const router = createBrowserRouter([
           { index: true, element: <PlaceholderPage title="Dashboard" /> },
           { path: 'movimentos', element: <MovementsPage /> },
           { path: 'contas', element: <AccountsPage /> },
-          { path: 'custos-fixos', element: <PlaceholderPage title="Custos fixos" /> },
+          { path: 'custos-fixos', element: <RecurringPage /> },
           { path: 'categorias', element: <CategoriesPage /> },
         ],
       },

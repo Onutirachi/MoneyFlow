@@ -3,7 +3,7 @@ import { db } from '../db/jsonDb.js';
 import { notFound } from '../errors.js';
 import type { RecurringInput } from '../schemas/recurring.schema.js';
 import type { Movement, RecurringCost } from '../types.js';
-import { dateInMonth, monthRange } from '../utils/date.js';
+import { dateInMonth, monthRange, todayISO } from '../utils/date.js';
 import { validateRefs } from './refs.js';
 
 export type PublicRecurring = Omit<RecurringCost, 'userId'>;
@@ -83,18 +83,34 @@ export function create(userId: string, input: RecurringInput): PublicRecurring {
   return present(recurring);
 }
 
-/** Altera apenas meses ainda não materializados; ocorrências já geradas ficam como estão. */
+/**
+ * Descarta as ocorrências futuras (data > hoje) já geradas, liberando esses meses para serem
+ * regenerados com os dados atuais. Passado e hoje ficam intactos (ADR 0006).
+ */
+function dropFutureOccurrences(recurring: RecurringCost, today = todayISO()): void {
+  const { data } = db;
+  data.movements = data.movements.filter(
+    (m) => !(m.recurringId === recurring.id && m.date > today),
+  );
+  recurring.materializedMonths = recurring.materializedMonths.filter(
+    (month) => dateInMonth(month, recurring.dayOfMonth) <= today,
+  );
+}
+
+/** Edição vale para o futuro: ocorrências futuras são regeneradas; as passadas ficam como estão. */
 export function update(userId: string, id: string, input: RecurringInput): PublicRecurring {
   const recurring = getOwnedRecurring(userId, id);
   validateRefs(userId, input);
+  dropFutureOccurrences(recurring);
   Object.assign(recurring, input);
   db.save();
   return present(recurring);
 }
 
-/** Exclui o custo fixo; movimentos já gerados permanecem, desvinculados. */
+/** Exclui o custo fixo: ocorrências futuras somem; as passadas permanecem, desvinculadas. */
 export function remove(userId: string, id: string): void {
   const recurring = getOwnedRecurring(userId, id);
+  dropFutureOccurrences(recurring);
   const { data } = db;
   for (const m of data.movements) {
     if (m.recurringId === id) m.recurringId = null;

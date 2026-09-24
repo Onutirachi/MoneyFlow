@@ -23,8 +23,9 @@
 - Definidos por: descrição, valor, tipo (normalmente `SAIDA`, mas pode ser `ENTRADA`, ex.: salário), conta, método, categoria, dia do mês (1–31), mês inicial e mês final opcional.
 - **Materialização lazy e idempotente:** quando um mês é consultado (`/movements?month=` ou `/dashboard?month=`), o backend gera os movimentos reais de todos os custos fixos ativos, desde o `startMonth` até o mês consultado (o dashboard vai até mês + 3, por causa dos compromissos futuros). Cada custo fixo guarda `materializedMonths`; um mês já materializado nunca é gerado de novo, então consultar outra vez não duplica.
 - Dia inexistente no mês → último dia do mês.
-- Editar o custo fixo altera apenas os meses **ainda não materializados**. Desativar para de gerar. Excluir o custo fixo mantém os movimentos já gerados (desvinculados).
-- Movimento gerado por custo fixo pode ser editado/excluído individualmente; se excluído, não é recriado (o mês continua em `materializedMonths`).
+- **Editar, pausar ou excluir** um custo fixo vale daqui pra frente: as ocorrências já geradas com **data depois de hoje** são descartadas e, se o custo continuar ativo, geradas de novo com os dados atuais. Ocorrências de hoje ou passadas nunca mudam. Ao excluir, as passadas ficam, desvinculadas (`recurringId: null`). Ver ADR 0006.
+- Trade-off: uma ocorrência futura excluída ou editada à mão é recriada se o custo fixo for editado depois.
+- Movimento gerado por custo fixo pode ser editado/excluído individualmente; se excluído, não é recriado (o mês continua em `materializedMonths`), a menos que o custo fixo seja editado depois.
 
 ## Saldo
 - Saldo da conta = `initialBalance + Σ entradas − Σ saídas` com `date <= hoje`.

@@ -1,9 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { AccountSelect, CategorySelect, MethodSelect } from '@/components/common/EntitySelects';
 import { Field } from '@/components/common/Field';
 import { MoneyInput } from '@/components/common/MoneyInput';
 import { Button } from '@/components/ui/button';
@@ -16,22 +17,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useAccountMethodSync } from '@/hooks/useAccountMethodSync';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useCategories } from '@/hooks/useCategories';
 import { useCreateMovement, useUpdateMovement } from '@/hooks/useMovements';
 import { getErrorMessage } from '@/lib/api';
-import { METHOD_LABELS } from '@/lib/format';
-import { METHOD_ICONS } from '@/lib/methods';
-import type { Movement, MovementScope, MovementType } from '@/types';
+import type { Movement, MovementScope, MovementType, PaymentMethod } from '@/types';
 import { InstallmentPreview } from './InstallmentPreview';
 
 const schema = z
@@ -82,7 +75,6 @@ export function MovementFormDialog({
     handleSubmit,
     reset,
     setValue,
-    getValues,
     formState: { errors },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
@@ -107,6 +99,7 @@ export function MovementFormDialog({
     type,
     accountId,
     method,
+    categoryId,
     amount,
     description,
     date,
@@ -119,6 +112,7 @@ export function MovementFormDialog({
       'type',
       'accountId',
       'method',
+      'categoryId',
       'amount',
       'description',
       'date',
@@ -134,19 +128,15 @@ export function MovementFormDialog({
     [categories, type],
   );
 
-  // Método limitado aos cadastrados na conta: se o atual não vale para a conta nova, troca.
-  useEffect(() => {
-    if (!account) return;
-    if (!method || !account.methods.includes(method)) {
-      setValue('method', account.methods.length === 1 ? account.methods[0]! : (undefined as never));
-    }
-  }, [account, method, setValue]);
-
-  // Categoria precisa ser do mesmo tipo do movimento.
-  useEffect(() => {
-    const current = getValues('categoryId');
-    if (current && !typeCategories.some((c) => c.id === current)) setValue('categoryId', '');
-  }, [typeCategories, getValues, setValue]);
+  useAccountMethodSync({
+    account,
+    method,
+    setMethod: useCallback((m) => setValue('method', m as PaymentMethod), [setValue]),
+    type,
+    categoryId,
+    categories,
+    setCategoryId: useCallback((id) => setValue('categoryId', id), [setValue]),
+  });
 
   const groupEdit = isInstallment && scope === 'group';
 
@@ -255,22 +245,11 @@ export function MovementFormDialog({
                 control={control}
                 name="accountId"
                 render={({ field }) => (
-                  <Select value={field.value || ''} onValueChange={field.onChange}>
-                    <SelectTrigger className="w-full" aria-label="Conta">
-                      <SelectValue placeholder="Escolha a conta" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {accounts.map((a) => (
-                        <SelectItem key={a.id} value={a.id}>
-                          <span
-                            className="size-2.5 rounded-full"
-                            style={{ backgroundColor: a.color }}
-                          />
-                          {a.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <AccountSelect
+                    accounts={accounts}
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
                 )}
               />
             </Field>
@@ -284,26 +263,7 @@ export function MovementFormDialog({
                 control={control}
                 name="method"
                 render={({ field }) => (
-                  <Select
-                    value={field.value ?? ''}
-                    onValueChange={field.onChange}
-                    disabled={!account}
-                  >
-                    <SelectTrigger className="w-full" aria-label="Método de pagamento">
-                      <SelectValue placeholder="Escolha o método" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {account?.methods.map((m) => {
-                        const Icon = METHOD_ICONS[m];
-                        return (
-                          <SelectItem key={m} value={m}>
-                            <Icon />
-                            {METHOD_LABELS[m]}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
+                  <MethodSelect account={account} value={field.value} onChange={field.onChange} />
                 )}
               />
             </Field>
@@ -357,22 +317,11 @@ export function MovementFormDialog({
               control={control}
               name="categoryId"
               render={({ field }) => (
-                <Select value={field.value || ''} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full" aria-label="Categoria">
-                    <SelectValue placeholder="Escolha a categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {typeCategories.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        <span
-                          className="size-2.5 rounded-full"
-                          style={{ backgroundColor: c.color }}
-                        />
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CategorySelect
+                  categories={typeCategories}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
               )}
             />
           </Field>

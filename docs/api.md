@@ -111,8 +111,8 @@ Body: `{ description, amount, date, accountId, method, categoryId }` (tipo não 
 |---|---|---|---|
 | GET | `/recurring` | — | `200 RecurringCost[]` |
 | POST | `/recurring` | `{ description, amount, type, accountId, method, categoryId, dayOfMonth, startMonth, endMonth, active }` | `201 RecurringCost` |
-| PUT | `/recurring/:id` | igual ao POST | `200 RecurringCost` |
-| DELETE | `/recurring/:id` | — | `204` (movimentos já gerados ficam, com `recurringId: null`) |
+| PUT | `/recurring/:id` | igual ao POST | `200 RecurringCost` (ocorrências futuras são regeneradas) |
+| DELETE | `/recurring/:id` | — | `204` (ocorrências futuras são removidas; passadas ficam com `recurringId: null`) |
 
 ## Dashboard
 ### `GET /dashboard?month=YYYY-MM&accountId=`
