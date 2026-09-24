@@ -64,3 +64,10 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Frontend: telas de contas (saldo, métodos de pagamento) e categorias (entradas/saídas).
 ### Alterado
 - Backend: `jsonDb` recarrega o arquivo quando ele muda por fora; seed com saldos iniciais realistas.
+
+## [Etapa 11] — 2026-09-23
+### Adicionado
+- Frontend: tela de movimentos com navegação mensal, lista por dia, filtros e badges de parcela, fixo e previsto.
+- Formulário com métodos limitados à conta, parcelamento com prévia e edição/exclusão por parcela ou grupo.
+### Corrigido
+- `MoneyInput`: a digitação sempre entra no final do número, independentemente da posição do cursor.

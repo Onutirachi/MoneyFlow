@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PrivateRoute, PublicOnlyRoute } from '@/components/layout/RouteGuards';
 import { LoginPage } from '@/pages/Login';
+import { MovementsPage } from '@/pages/Movements';
 import { AccountsPage } from '@/pages/Accounts';
 import { CategoriesPage } from '@/pages/Categories';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
@@ -22,7 +23,7 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { index: true, element: <PlaceholderPage title="Dashboard" /> },
-          { path: 'movimentos', element: <PlaceholderPage title="Movimentos" /> },
+          { path: 'movimentos', element: <MovementsPage /> },
           { path: 'contas', element: <AccountsPage /> },
           { path: 'custos-fixos', element: <PlaceholderPage title="Custos fixos" /> },
           { path: 'categorias', element: <CategoriesPage /> },

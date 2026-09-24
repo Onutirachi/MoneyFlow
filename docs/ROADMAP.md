@@ -14,7 +14,7 @@ Legenda: ⬜ pendente · 🔄 em andamento · ✅ concluída
 | 08 | Frontend: setup (Vite, Tailwind, shadcn, router, query, layout) | ✅ | [08-frontend-setup](etapas/08-frontend-setup.md) |
 | 09 | Frontend: login e cadastro | ✅ | [09-frontend-auth](etapas/09-frontend-auth.md) |
 | 10 | Frontend: contas e categorias | ✅ | [10-frontend-contas-categorias](etapas/10-frontend-contas-categorias.md) |
-| 11 | Frontend: movimentos (lista mensal, formulário, parcelado) | ⬜ | |
+| 11 | Frontend: movimentos (lista mensal, formulário, parcelado) | ✅ | [11-frontend-movimentos](etapas/11-frontend-movimentos.md) |
 | 12 | Frontend: custos fixos | ⬜ | |
 | 13 | Frontend: dashboard e gráficos | ⬜ | |
 | 14 | Revisão final e verificação end-to-end | ⬜ | |
