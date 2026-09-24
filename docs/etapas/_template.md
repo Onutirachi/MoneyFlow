@@ -2,7 +2,7 @@
 
 - **Status:** 🔄 em andamento | ✅ concluída
 - **Data:** YYYY-MM-DD
-- **Commit:** `hash` (preenchido ao fechar)
+- **Commit:** ver `git log --grep "etapa NN"`
 
 ## Objetivo
 O que esta etapa entrega e por quê.

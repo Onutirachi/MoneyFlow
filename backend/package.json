@@ -12,7 +12,7 @@
     "format": "prettier --write .",
     "seed": "tsx src/seed.ts",
     "reset": "tsx src/seed.ts --empty",
-    "test": "tsx --test src/**/*.test.ts"
+    "test": "tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

@@ -19,7 +19,7 @@ cd backend && npm install && npm run seed && npm run dev
 # frontend (porta 5173)
 cd frontend && npm install && npm run dev
 # qualidade (rodar nos dois projetos)
-npm run typecheck && npm run lint && npm run build
+npm run typecheck && npm run lint && npm run build   # backend também: npm test
 ```
 Usuário do seed: `demo@demo.com` / `123456`.
 

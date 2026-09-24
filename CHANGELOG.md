@@ -16,3 +16,10 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Tratamento padronizado de erros (`AppError`, validação, JSON inválido, 404).
 - Utilitários de data, dinheiro e validação; rota `GET /api/health`.
 - `.gitattributes` com LF.
+
+## [Etapa 03] — 2026-09-23
+### Adicionado
+- Backend: cadastro, login e `/auth/me` com JWT e bcrypt; categorias padrão criadas no cadastro.
+- Testes de integração com `node:test` (`npm test`) e banco temporário.
+### Alterado
+- Harness: `npm test` passa a fazer parte do checklist de qualidade.
