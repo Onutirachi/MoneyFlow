@@ -10,3 +10,4 @@ Cada ADR registra **uma** decisão importante, o contexto e as alternativas. ADR
 | [0004](0004-custos-fixos-materializacao-lazy.md) | Custos fixos com materialização lazy e idempotente | Aceita (edição → 0006) |
 | [0005](0005-parcelamento-como-movimentos.md) | Parcelas geradas como movimentos independentes agrupados | Aceita |
 | [0006](0006-custos-fixos-edicao-regenera-futuro.md) | Editar/pausar/excluir custo fixo regenera as ocorrências futuras | Aceita |
+| [0007](0007-visualizacao-de-dados.md) | Padrões de visualização do dashboard (skill dataviz, paleta validada) | Aceita |

@@ -18,7 +18,10 @@ src/
     queryKeys.ts         chaves do TanStack Query
     format.ts            formatBRL, formatDate, formatMonth, methodLabel
     date.ts              currentMonth, addMonths, ...
-    chartColors.ts       paleta única dos gráficos
+    chartColors.ts       paleta única dos gráficos (CSS vars validadas em index.css)
+    chartTicks.ts        niceTicks(): ticks redondos para eixos
+    money.ts             splitInstallments (prévia das parcelas)
+    methods.ts           ícones por método de pagamento
     utils.ts             cn() (reexporta o pacote `cn`, substituto do clsx + tailwind-merge)
     colors.ts            cores disponíveis para contas/categorias
     queryClient.ts       QueryClient + invalidateFinancialData()
@@ -44,7 +47,7 @@ src/
 - Dinheiro: estado em centavos; exibir com `formatBRL`; digitar com `MoneyInput`.
 - Mês selecionado: `useMonthParam()` (lê/escreve `?month=`).
 - Textos da UI em pt-BR. Feedback de ações via toast (sonner).
-- Cores de gráficos só de `lib/chartColors.ts`.
+- Cores de gráficos só de `lib/chartColors.ts`. **Antes de criar ou alterar um gráfico, carregue a skill `dataviz`** e siga a ADR 0007: forma pelo trabalho do dado, eixo único, legenda em 2+ séries e visão em tabela. Paleta nova tem que passar no `validate_palette.js`.
 - Componentes shadcn: adicionar com `npx shadcn@latest add <nome>`. Não editar a lógica deles.
 - Prettier ordena as classes Tailwind (`prettier-plugin-tailwindcss`). Rode `npm run format` antes de fechar a etapa.
 - Arquivos `.tsx` exportam só componentes (fast refresh); constantes e helpers vão para `lib/`.

@@ -78,3 +78,8 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Selects compartilhados de conta, método e categoria (`EntitySelects`) e o hook `useAccountMethodSync`.
 ### Alterado
 - Backend (ADR 0006): editar, pausar ou excluir um custo fixo regenera as ocorrências futuras já geradas.
+
+## [Etapa 13] — 2026-09-23
+### Adicionado
+- Frontend: dashboard com KPIs e deltas vs mês anterior, frase "economizou?", histórico de 12 meses (gráfico e tabela), resultado mensal divergente, quebras por categoria, conta e método, saldo por conta e compromissos futuros.
+- Filtro de conta para o painel inteiro; paleta de gráficos validada para claro e escuro (ADR 0007).
