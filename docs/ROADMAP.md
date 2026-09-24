@@ -12,7 +12,7 @@ Legenda: ⬜ pendente · 🔄 em andamento · ✅ concluída
 | 06 | Backend: custos fixos (materialização lazy) | ✅ | [06-backend-custos-fixos](etapas/06-backend-custos-fixos.md) |
 | 07 | Backend: dashboard + seed | ✅ | [07-backend-dashboard-seed](etapas/07-backend-dashboard-seed.md) |
 | 08 | Frontend: setup (Vite, Tailwind, shadcn, router, query, layout) | ✅ | [08-frontend-setup](etapas/08-frontend-setup.md) |
-| 09 | Frontend: login e cadastro | ⬜ | |
+| 09 | Frontend: login e cadastro | ✅ | [09-frontend-auth](etapas/09-frontend-auth.md) |
 | 10 | Frontend: contas e categorias | ⬜ | |
 | 11 | Frontend: movimentos (lista mensal, formulário, parcelado) | ⬜ | |
 | 12 | Frontend: custos fixos | ⬜ | |

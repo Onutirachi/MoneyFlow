@@ -14,12 +14,12 @@ Requisitos: Node 20 ou superior.
 cd backend
 npm install
 npm run seed      # cria dados de demonstração
-npm run dev       # http://localhost:3333
+npm run dev       # http://localhost:3334
 
 # terminal 2
 cd frontend
 npm install
-npm run dev       # http://localhost:5173
+npm run dev       # http://localhost:5174
 ```
 
 Login de demonstração: **demo@demo.com** / **123456**

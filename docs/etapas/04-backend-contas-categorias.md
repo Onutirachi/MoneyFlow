@@ -30,7 +30,7 @@ CRUD de contas (com os métodos de pagamento aceitos) e de categorias. É a base
 ## Como testar
 ```bash
 cd backend && npm test
-curl -X POST localhost:3333/api/accounts -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
+curl -X POST localhost:3334/api/accounts -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
   -d '{"name":"Banco XPTO","color":"#2563eb","initialBalance":100000,"methods":["PIX","CREDITO","DEBITO"]}'
 ```
 

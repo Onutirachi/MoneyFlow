@@ -4,7 +4,7 @@ API mock em Node + Express + TypeScript. Implementa o contrato de [../docs/api.m
 
 ## Comandos
 ```bash
-npm run dev        # tsx watch, porta 3333
+npm run dev        # tsx watch, porta 3334
 npm run seed       # recria data/db.json com dados de demonstração
 npm run reset      # recria data/db.json vazio
 npm run typecheck && npm run lint && npm run build && npm test

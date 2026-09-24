@@ -1,10 +1,10 @@
 # Frontend — padrões
 
-Vite 8 + React 19 + TypeScript 6, Tailwind v4 + shadcn/ui (base Radix, preset nova), Recharts 3, TanStack Query 5, react-hook-form + zod 4, React Router 8 (pacote `react-router`, API igual à v7), next-themes (tema claro/escuro), sonner (toasts). Consome a API de [../docs/api.md](../docs/api.md).
+Vite 8 + React 19 + TypeScript 6, Tailwind v4 + shadcn/ui (base Radix, preset nova), Recharts 3, TanStack Query 5, react-hook-form + zod 4, React Router 8 (pacote `react-router`, API igual à v7), tema claro/escuro próprio (`contexts/ThemeContext.tsx`), sonner (toasts). Consome a API de [../docs/api.md](../docs/api.md).
 
 ## Comandos
 ```bash
-npm run dev        # porta 5173 (API em VITE_API_URL, padrão http://localhost:3333/api)
+npm run dev        # porta 5174 (API em VITE_API_URL, padrão http://localhost:3334/api)
 npm run typecheck && npm run lint && npm run build
 ```
 

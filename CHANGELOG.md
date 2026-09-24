@@ -50,3 +50,11 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 ### Adicionado
 - Frontend: Vite + React + TS, Tailwind v4, shadcn/ui, TanStack Query, React Router 8, ESLint e Prettier.
 - Camada de dados (hooks), AuthContext, layout responsivo, tema claro/escuro, seletor de mês e componentes comuns.
+
+## [Etapa 09] — 2026-09-23
+### Adicionado
+- Frontend: telas de login e cadastro, rotas protegidas e redirecionamento de volta à origem.
+### Alterado
+- Portas padrão: backend **3334**, frontend **5174** (3333 e 5173 já estão em uso por outro projeto na máquina).
+- Tema claro/escuro com provider próprio no lugar de `next-themes`.
+- Backend encerra com mensagem clara quando a porta está ocupada.

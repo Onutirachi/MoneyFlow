@@ -31,9 +31,9 @@ Cadastro, login e sessão do usuário via JWT, base para todas as rotas protegid
 ```bash
 cd backend && npm test
 # manual
-curl -X POST localhost:3333/api/auth/register -H "Content-Type: application/json" \
+curl -X POST localhost:3334/api/auth/register -H "Content-Type: application/json" \
   -d '{"name":"Ana","email":"ana@test.com","password":"123456"}'
-curl localhost:3333/api/auth/me -H "Authorization: Bearer <token>"
+curl localhost:3334/api/auth/me -H "Authorization: Bearer <token>"
 ```
 
 ## Pendências / próximos passos

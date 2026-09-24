@@ -14,9 +14,9 @@ Padrões específicos: [backend/CLAUDE.md](backend/CLAUDE.md) e [frontend/CLAUDE
 
 ## Comandos
 ```bash
-# backend (porta 3333)
+# backend (porta 3334)
 cd backend && npm install && npm run seed && npm run dev
-# frontend (porta 5173)
+# frontend (porta 5174)
 cd frontend && npm install && npm run dev
 # qualidade (rodar nos dois projetos)
 npm run typecheck && npm run lint && npm run build   # backend também: npm test

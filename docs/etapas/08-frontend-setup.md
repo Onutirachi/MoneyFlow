@@ -36,7 +36,7 @@ Criar a base do frontend: projeto Vite, design system, camada de dados, layout c
 ```bash
 cd frontend && npm install
 npm run typecheck && npm run lint && npm run build
-npm run dev   # http://localhost:5173: layout, navegação, seletor de mês e tema
+npm run dev   # http://localhost:5174: layout, navegação, seletor de mês e tema
 ```
 
 ## Pendências / próximos passos

@@ -37,8 +37,8 @@ Criar o esqueleto do backend mock: servidor Express 5 em TypeScript, persistênc
 cd backend
 npm run typecheck && npm run lint && npm run build
 npm run dev
-curl http://localhost:3333/api/health   # {"status":"ok"}
-curl http://localhost:3333/api/xyz      # 404 {"error":{"code":"NOT_FOUND",...}}
+curl http://localhost:3334/api/health   # {"status":"ok"}
+curl http://localhost:3334/api/xyz      # 404 {"error":{"code":"NOT_FOUND",...}}
 ```
 
 ## Pendências / próximos passos
