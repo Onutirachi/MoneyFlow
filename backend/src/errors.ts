@@ -10,7 +10,8 @@ export class AppError extends Error {
   }
 }
 
-export const notFound = (what = 'Recurso') => new AppError(404, 'NOT_FOUND', `${what} não encontrado`);
+export const notFound = (what = 'Recurso') =>
+  new AppError(404, 'NOT_FOUND', `${what} não encontrado`);
 
 export const unauthorized = (message = 'Não autenticado') =>
   new AppError(401, 'UNAUTHORIZED', message);

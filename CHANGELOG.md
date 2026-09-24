@@ -28,3 +28,9 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 ### Adicionado
 - Backend: CRUD de contas (métodos de pagamento, saldo calculado) e de categorias.
 - Proteção contra exclusão de conta ou categoria em uso (409).
+
+## [Etapa 05] — 2026-09-23
+### Adicionado
+- Backend: movimentos (entrada/saída) com validação de método por conta e tipo da categoria.
+- Parcelamento automático ("Descrição i/n", meses consecutivos, soma exata em centavos).
+- Edição e exclusão de parcelas com `scope=one|group`.

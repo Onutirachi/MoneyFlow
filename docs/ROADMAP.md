@@ -8,7 +8,7 @@ Legenda: ⬜ pendente · 🔄 em andamento · ✅ concluída
 | 02 | Backend: setup (Express, jsonDb, middlewares, lint) | ✅ | [02-backend-setup](etapas/02-backend-setup.md) |
 | 03 | Backend: autenticação (register/login/me, JWT) | ✅ | [03-backend-auth](etapas/03-backend-auth.md) |
 | 04 | Backend: contas e categorias | ✅ | [04-backend-contas-categorias](etapas/04-backend-contas-categorias.md) |
-| 05 | Backend: movimentos + parcelamento | ⬜ | |
+| 05 | Backend: movimentos + parcelamento | ✅ | [05-backend-movimentos](etapas/05-backend-movimentos.md) |
 | 06 | Backend: custos fixos (materialização lazy) | ⬜ | |
 | 07 | Backend: dashboard + seed | ⬜ | |
 | 08 | Frontend: setup (Vite, Tailwind, shadcn, router, query, layout) | ⬜ | |

@@ -2,7 +2,9 @@ import { z } from 'zod';
 import { MOVEMENT_TYPES, PAYMENT_METHODS } from '../types.js';
 import { isValidDate } from '../utils/date.js';
 
-export const colorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Cor deve estar no formato #RRGGBB');
+export const colorSchema = z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/, 'Cor deve estar no formato #RRGGBB');
 export const movementTypeSchema = z.enum(MOVEMENT_TYPES);
 export const paymentMethodSchema = z.enum(PAYMENT_METHODS);
 /** Centavos, inteiro positivo (até R$ 1 bilhão) */
