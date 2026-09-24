@@ -90,7 +90,7 @@ export function HistoryChart({ history }: { history: Dashboard['history'] }) {
                   data={data}
                   barGap={2}
                   barCategoryGap="28%"
-                  margin={{ left: 4, right: 4 }}
+                  margin={{ top: 12, left: 4, right: 4 }}
                 >
                   <CartesianGrid vertical={false} stroke={CHART.grid} />
                   <XAxis

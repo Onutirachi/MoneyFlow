@@ -35,9 +35,10 @@ export function RegisterPage() {
 
   const onSubmit = handleSubmit(async ({ name, email, password }) => {
     try {
+      // destino pós-cadastro: o PublicOnlyRoute redireciona para state.from ao detectar o usuário
+      navigate('.', { replace: true, state: { from: '/contas' } });
       await signUp(name, email, password);
       toast.success('Conta criada! Comece cadastrando suas contas.');
-      navigate('/contas', { replace: true });
     } catch (error) {
       toast.error(getErrorMessage(error));
     }

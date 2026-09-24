@@ -1,10 +1,23 @@
 # Finanças Pessoais
 
-Sistema de gerenciamento financeiro pessoal: contas com métodos de pagamento, movimentos de entrada e saída, parcelamento automático, custos fixos mensais e um dashboard com comparação entre meses.
+Sistema de gerenciamento financeiro pessoal (TCC).
+
+## Funcionalidades
+- **Login e cadastro** (JWT).
+- **Contas** (ex.: Banco XPTO, Carteira Física), cada uma com seus **métodos de pagamento** (Dinheiro, PIX, Crédito, Débito).
+- **Movimentos** de entrada e saída. Ao lançar, você escolhe a conta, e **só aparecem os métodos cadastrados nela**:
+  `Carteira Física → Saída → Dinheiro → R$ 45,50` · `Banco XPTO → Saída → Crédito → R$ 1.200,00`
+- **Parcelamento**: informe o valor total e o número de parcelas. As parcelas são lançadas nos meses seguintes como `Celular 1/3`, `Celular 2/3`...
+- **Custos fixos**: aluguel, internet, salário... entram sozinhos todo mês. Podem ser pausados, e editar vale daqui pra frente.
+- **Navegação mês a mês**, para ver lançamentos passados e futuros (previstos).
+- **Dashboard**: saldo, entradas, saídas e resultado com comparação ao mês anterior ("Economizou!"), histórico de 12 meses, sobrou/faltou por mês, gastos por categoria, conta e método, saldo por conta e compromissos dos próximos meses. Tudo filtrável por conta.
+- Tema claro/escuro, layout responsivo.
 
 ## Projetos
-- [`backend/`](backend/): API mock em Node + Express + TypeScript (dados em `backend/data/db.json`)
-- [`frontend/`](frontend/): Vite + React + TypeScript
+| Pasta | Stack |
+|---|---|
+| [`backend/`](backend/) | API **mock** em Node + Express 5 + TypeScript (dados em `backend/data/db.json`) |
+| [`frontend/`](frontend/) | Vite + React 19 + TypeScript, Tailwind v4, shadcn/ui, Recharts, TanStack Query |
 
 ## Como rodar
 Requisitos: Node 20 ou superior.
@@ -13,8 +26,8 @@ Requisitos: Node 20 ou superior.
 # terminal 1
 cd backend
 npm install
-npm run seed      # cria dados de demonstração
-npm run dev       # http://localhost:3334
+npm run seed      # dados de demonstração (npm run reset = banco vazio)
+npm run dev       # http://localhost:3334/api
 
 # terminal 2
 cd frontend
@@ -24,5 +37,22 @@ npm run dev       # http://localhost:5174
 
 Login de demonstração: **demo@demo.com** / **123456**
 
+> As portas padrão são 3334/5174 porque 3333/5173 já estão em uso por outro projeto nesta máquina. Para mudar: `PORT=xxxx npm run dev` no backend e `VITE_API_URL=http://localhost:xxxx/api` no frontend (ver `.env.example`).
+
+## Qualidade
+```bash
+# em cada projeto
+npm run typecheck && npm run lint && npm run build
+# backend
+npm test          # 21 testes de integração
+```
+
 ## Documentação
-Toda a documentação do projeto, com padrões, contrato da API, regras de negócio, diário de etapas e decisões, está em [`docs/`](docs/README.md).
+Tudo está em [`docs/`](docs/README.md):
+- [ROADMAP](docs/ROADMAP.md): as 14 etapas e o que cada uma entregou
+- [Diário de etapas](docs/etapas/): o que foi feito e como testar
+- [Contrato da API](docs/api.md) e [regras de negócio](docs/regras-de-negocio.md)
+- [Decisões de arquitetura (ADRs)](docs/adr/README.md)
+- [Padrões de código](docs/padroes.md) e [CHANGELOG](CHANGELOG.md)
+
+O [`CLAUDE.md`](CLAUDE.md) é o harness do projeto, lido automaticamente pelo Claude Code. Os comandos `/nova-etapa`, `/fechar-etapa` e `/nova-adr` mantêm o padrão de documentação a cada nova etapa.

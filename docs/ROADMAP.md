@@ -17,7 +17,7 @@ Legenda: ⬜ pendente · 🔄 em andamento · ✅ concluída
 | 11 | Frontend: movimentos (lista mensal, formulário, parcelado) | ✅ | [11-frontend-movimentos](etapas/11-frontend-movimentos.md) |
 | 12 | Frontend: custos fixos | ✅ | [12-frontend-custos-fixos](etapas/12-frontend-custos-fixos.md) |
 | 13 | Frontend: dashboard e gráficos | ✅ | [13-frontend-dashboard](etapas/13-frontend-dashboard.md) |
-| 14 | Revisão final e verificação end-to-end | ⬜ | |
+| 14 | Revisão final e verificação end-to-end | ✅ | [14-revisao-final](etapas/14-revisao-final.md) |
 
 ## Ideias futuras (fora do escopo atual)
 - Fatura de cartão de crédito (dia de fechamento/vencimento por conta).

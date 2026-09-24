@@ -78,7 +78,7 @@ export function ResultChart({ history }: { history: Dashboard['history'] }) {
       <CardHeader>
         <CardTitle>Sobrou ou faltou?</CardTitle>
         <CardDescription>
-          Resultado mensal · {positives} de {withData} meses no azul
+          Resultado mensal · {positives} de {withData} {withData === 1 ? 'mês' : 'meses'} no azul
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -90,7 +90,7 @@ export function ResultChart({ history }: { history: Dashboard['history'] }) {
         />
         <div className="h-52">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ left: 4, right: 4 }}>
+            <BarChart data={data} margin={{ top: 12, left: 4, right: 4 }}>
               <XAxis
                 dataKey="label"
                 tickLine={false}

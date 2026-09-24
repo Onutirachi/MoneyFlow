@@ -1,6 +1,6 @@
 # Changelog
 
-Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). Cada etapa do [ROADMAP](docs/ROADMAP.md) gera uma entrada.
+Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). Cada etapa do [ROADMAP](docs/ROADMAP.md) gera uma entrada, em ordem cronológica (a mais recente no fim).
 
 ## [Etapa 01] — 2026-09-23
 ### Adicionado
@@ -83,3 +83,10 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 ### Adicionado
 - Frontend: dashboard com KPIs e deltas vs mês anterior, frase "economizou?", histórico de 12 meses (gráfico e tabela), resultado mensal divergente, quebras por categoria, conta e método, saldo por conta e compromissos futuros.
 - Filtro de conta para o painel inteiro; paleta de gráficos validada para claro e escuro (ADR 0007).
+
+## [Etapa 14] — 2026-09-24
+### Corrigido
+- Frontend: depois do cadastro o usuário ia para o dashboard em vez de `/contas` (corrida de redirecionamento). Agora só o `PublicOnlyRoute` redireciona, respeitando `state.from`.
+- Gráficos: rótulo do topo do eixo não é mais comprimido; concordância "1 mês".
+### Adicionado
+- README com funcionalidades e mapa da documentação; verificação end-to-end com usuário novo.

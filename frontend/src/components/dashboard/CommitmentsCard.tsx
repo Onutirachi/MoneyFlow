@@ -101,7 +101,7 @@ export function CommitmentsCard({ data }: { data: Dashboard }) {
           </div>
           <div className="h-40">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={points} margin={{ left: 4, right: 4 }} barCategoryGap="35%">
+              <BarChart data={points} margin={{ top: 12, left: 4, right: 4 }} barCategoryGap="35%">
                 <CartesianGrid vertical={false} stroke={CHART.grid} />
                 <XAxis
                   dataKey="label"

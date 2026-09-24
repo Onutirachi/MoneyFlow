@@ -21,10 +21,18 @@ export function PrivateRoute() {
   return <Outlet />;
 }
 
-/** Login/cadastro: usuário já logado vai direto para o dashboard. */
+/**
+ * Login/cadastro: com usuário logado, redireciona para `state.from` (ou o dashboard).
+ * É o ÚNICO lugar que navega após autenticar; as páginas não chamam navigate(), o que
+ * evitaria uma corrida entre dois redirecionamentos.
+ */
 export function PublicOnlyRoute() {
   const { user, loading } = useAuth();
+  const location = useLocation();
   if (loading) return <FullScreenLoader />;
-  if (user) return <Navigate to="/" replace />;
+  if (user) {
+    const from = (location.state as { from?: string } | null)?.from ?? '/';
+    return <Navigate to={from} replace />;
+  }
   return <Outlet />;
 }

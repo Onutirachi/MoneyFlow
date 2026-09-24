@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Field } from '@/components/common/Field';
@@ -19,9 +19,6 @@ type FormValues = z.infer<typeof schema>;
 
 export function LoginPage() {
   const { login } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const from = (location.state as { from?: string } | null)?.from ?? '/';
 
   const {
     register,
@@ -31,8 +28,8 @@ export function LoginPage() {
 
   const onSubmit = handleSubmit(async ({ email, password }) => {
     try {
+      // o redirecionamento (para state.from) fica a cargo do PublicOnlyRoute
       await login(email, password);
-      navigate(from, { replace: true });
     } catch (error) {
       toast.error(getErrorMessage(error));
     }

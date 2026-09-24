@@ -43,6 +43,7 @@ src/
 
 ## Regras
 - **Nada de axios fora de `hooks/`** (e do `AuthContext`).
+- Depois de login ou cadastro, **só o `PublicOnlyRoute` redireciona** (para `location.state.from` ou `/`). As páginas não chamam `navigate()` depois de autenticar, porque isso cria uma corrida entre redirecionamentos (etapa 14).
 - Mutations de movimentos/custos fixos invalidam `movements`, `dashboard` e `accounts`.
 - Dinheiro: estado em centavos; exibir com `formatBRL`; digitar com `MoneyInput`.
 - Mês selecionado: `useMonthParam()` (lê/escreve `?month=`).
