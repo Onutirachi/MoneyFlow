@@ -12,7 +12,7 @@
 ## Backend
 Fluxo de uma requisição:
 ```
-routes/x.routes.ts  →  validate(zodSchema)  →  services/x.service.ts  →  db/jsonDb.ts
+routes/x.routes.ts  →  parse(zodSchema, input)  →  services/x.service.ts  →  db/jsonDb.ts
 ```
 - **Rotas finas:** só extraem `req.userId`, `req.body` validado e chamam o service.
 - **Toda regra de negócio fica em `services/`.** Services não conhecem `req`/`res`.

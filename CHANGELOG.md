@@ -8,3 +8,11 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Comandos do Claude Code: `/nova-etapa`, `/fechar-etapa`, `/nova-adr`.
 - ADRs 0001–0005 (mock em JSON, centavos, UI, custos fixos, parcelamento).
 - ROADMAP com as 14 etapas, template de etapa, `.editorconfig`, `.gitignore`.
+
+## [Etapa 02] — 2026-09-23
+### Adicionado
+- Backend: Express 5 + TypeScript + Zod 4, ESLint e Prettier.
+- Persistência mock em `data/db.json` com escrita atômica.
+- Tratamento padronizado de erros (`AppError`, validação, JSON inválido, 404).
+- Utilitários de data, dinheiro e validação; rota `GET /api/health`.
+- `.gitattributes` com LF.

@@ -5,7 +5,7 @@ Legenda: ⬜ pendente · 🔄 em andamento · ✅ concluída
 | # | Etapa | Status | Doc |
 |---|---|---|---|
 | 01 | Harness: padrões, docs, comandos, ADRs | ✅ | [01-harness](etapas/01-harness.md) |
-| 02 | Backend: setup (Express, jsonDb, middlewares, lint) | ⬜ | |
+| 02 | Backend: setup (Express, jsonDb, middlewares, lint) | ✅ | [02-backend-setup](etapas/02-backend-setup.md) |
 | 03 | Backend: autenticação (register/login/me, JWT) | ⬜ | |
 | 04 | Backend: contas e categorias | ⬜ | |
 | 05 | Backend: movimentos + parcelamento | ⬜ | |

@@ -19,18 +19,18 @@ src/
   types.ts             tipos de domínio (espelhados em frontend/src/types/index.ts)
   db/jsonDb.ts         carrega/salva data/db.json (escrita atômica)
   errors.ts            AppError + helpers (notFound, badRequest...)
-  middleware/          auth.ts (JWT → req.userId), validate.ts (zod), errorHandler.ts
+  middleware/          auth.ts (JWT → req.userId), errorHandler.ts, notFoundHandler.ts
   schemas/             x.schema.ts — schemas zod de entrada
   routes/              x.routes.ts — rotas finas
   services/            x.service.ts — TODA regra de negócio
-  utils/               date.ts, money.ts
+  utils/               date.ts, money.ts, validation.ts
   seed.ts
 ```
 
 ## Como adicionar um endpoint
 1. Schema zod em `schemas/x.schema.ts`.
 2. Função no service `services/x.service.ts` recebendo `(userId, input)` e retornando dados puros. Lança `AppError` para erros.
-3. Rota em `routes/x.routes.ts`: `router.post('/', validate({ body: schema }), (req, res) => res.status(201).json(service.create(req.userId, req.body)))`.
+3. Rota em `routes/x.routes.ts`: `router.post('/', (req, res) => { res.status(201).json(service.create(req.userId, parse(createSchema, req.body))); })`. No Express 5 `req.query` é somente leitura, por isso validamos com `parse()` na rota e não com middleware. Erros lançados, inclusive em handlers async, chegam ao `errorHandler`.
 4. Registrar o router em `routes/index.ts` (se for novo).
 5. Documentar em `docs/api.md` e espelhar tipos no frontend.
 
