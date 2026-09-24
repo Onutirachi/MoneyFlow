@@ -7,27 +7,17 @@ import type {
   MovementScope,
   UpdateMovementInput,
 } from '../schemas/movement.schema.js';
-import type { Movement, MovementType, PaymentMethod } from '../types.js';
+import type { Movement } from '../types.js';
 import { addMonthsToDate, monthOf } from '../utils/date.js';
 import { splitInstallments } from '../utils/money.js';
-import { assertMethodAllowed, getOwnedAccount } from './accounts.service.js';
-import { assertCategoryType, getOwnedCategory } from './categories.service.js';
+import { ensureMaterialized } from './recurring.service.js';
+import { validateRefs } from './refs.js';
 
 export type PublicMovement = Omit<Movement, 'userId'>;
 
 export function present(movement: Movement): PublicMovement {
   const { userId: _userId, ...rest } = movement;
   return rest;
-}
-
-/** Garante que conta, método e categoria são válidos e do usuário. */
-export function validateRefs(
-  userId: string,
-  refs: { type: MovementType; accountId: string; method: PaymentMethod; categoryId: string },
-): void {
-  const account = getOwnedAccount(userId, refs.accountId);
-  assertMethodAllowed(account, refs.method);
-  assertCategoryType(getOwnedCategory(userId, refs.categoryId), refs.type);
 }
 
 const INSTALLMENT_SUFFIX = /\s+\d+\/\d+$/;
@@ -49,6 +39,7 @@ function groupOf(userId: string, movement: Movement, scope: MovementScope): Move
 }
 
 export function list(userId: string, query: ListMovementsQuery): PublicMovement[] {
+  ensureMaterialized(userId, query.month);
   return db.data.movements
     .filter(
       (m) =>
