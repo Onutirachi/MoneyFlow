@@ -124,6 +124,7 @@ interface Dashboard {
     income: number; expense: number; result: number;          // mês selecionado
     previous: { income: number; expense: number; result: number };
     variation: { income: number | null; expense: number | null; result: number | null }; // % vs mês anterior (null se anterior = 0)
+    // obs.: o % do resultado explode quando o anterior é próximo de 0 — a UI mostra a diferença em R$
   };
   totalBalance: number;
   accounts: { id: string; name: string; color: string; balance: number }[];

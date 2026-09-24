@@ -40,3 +40,8 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Backend: custos fixos mensais com geração automática e idempotente dos movimentos.
 ### Alterado
 - `validateRefs` movido para `services/refs.ts`.
+
+## [Etapa 07] — 2026-09-23
+### Adicionado
+- Backend: `GET /api/dashboard` com resumo do mês, comparação com o mês anterior, quebras por categoria, conta e método, histórico de 12 meses e compromissos futuros.
+- Seed de demonstração (`npm run seed`) e reset (`npm run reset`).

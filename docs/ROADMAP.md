@@ -10,7 +10,7 @@ Legenda: ⬜ pendente · 🔄 em andamento · ✅ concluída
 | 04 | Backend: contas e categorias | ✅ | [04-backend-contas-categorias](etapas/04-backend-contas-categorias.md) |
 | 05 | Backend: movimentos + parcelamento | ✅ | [05-backend-movimentos](etapas/05-backend-movimentos.md) |
 | 06 | Backend: custos fixos (materialização lazy) | ✅ | [06-backend-custos-fixos](etapas/06-backend-custos-fixos.md) |
-| 07 | Backend: dashboard + seed | ⬜ | |
+| 07 | Backend: dashboard + seed | ✅ | [07-backend-dashboard-seed](etapas/07-backend-dashboard-seed.md) |
 | 08 | Frontend: setup (Vite, Tailwind, shadcn, router, query, layout) | ⬜ | |
 | 09 | Frontend: login e cadastro | ⬜ | |
 | 10 | Frontend: contas e categorias | ⬜ | |
