@@ -1,5 +1,8 @@
 import { Router } from 'express';
+import { auth } from '../middleware/auth.js';
+import { accountsRoutes } from './accounts.routes.js';
 import { authRoutes } from './auth.routes.js';
+import { categoriesRoutes } from './categories.routes.js';
 
 export const routes = Router();
 
@@ -8,3 +11,7 @@ routes.get('/health', (_req, res) => {
 });
 
 routes.use('/auth', authRoutes);
+
+// Rotas protegidas
+routes.use('/accounts', auth, accountsRoutes);
+routes.use('/categories', auth, categoriesRoutes);

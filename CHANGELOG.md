@@ -23,3 +23,8 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Testes de integração com `node:test` (`npm test`) e banco temporário.
 ### Alterado
 - Harness: `npm test` passa a fazer parte do checklist de qualidade.
+
+## [Etapa 04] — 2026-09-23
+### Adicionado
+- Backend: CRUD de contas (métodos de pagamento, saldo calculado) e de categorias.
+- Proteção contra exclusão de conta ou categoria em uso (409).
