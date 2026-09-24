@@ -1,6 +1,6 @@
 # Frontend — padrões
 
-Vite + React + TypeScript, Tailwind + shadcn/ui, Recharts, TanStack Query, react-hook-form + zod, react-router. Consome a API de [../docs/api.md](../docs/api.md).
+Vite 8 + React 19 + TypeScript 6, Tailwind v4 + shadcn/ui (base Radix, preset nova), Recharts 3, TanStack Query 5, react-hook-form + zod 4, React Router 8 (pacote `react-router`, API igual à v7), next-themes (tema claro/escuro), sonner (toasts). Consome a API de [../docs/api.md](../docs/api.md).
 
 ## Comandos
 ```bash
@@ -19,7 +19,9 @@ src/
     format.ts            formatBRL, formatDate, formatMonth, methodLabel
     date.ts              currentMonth, addMonths, ...
     chartColors.ts       paleta única dos gráficos
-    utils.ts             cn() do shadcn
+    utils.ts             cn() (reexporta o pacote `cn`, substituto do clsx + tailwind-merge)
+    colors.ts            cores disponíveis para contas/categorias
+    queryClient.ts       QueryClient + invalidateFinancialData()
   contexts/AuthContext.tsx
   hooks/                 useAccounts, useCategories, useMovements, useRecurring, useDashboard, useMonthParam
   components/
@@ -43,3 +45,6 @@ src/
 - Mês selecionado: `useMonthParam()` (lê/escreve `?month=`).
 - Textos da UI em pt-BR. Feedback de ações via toast (sonner).
 - Cores de gráficos só de `lib/chartColors.ts`.
+- Componentes shadcn: adicionar com `npx shadcn@latest add <nome>`. Não editar a lógica deles.
+- Prettier ordena as classes Tailwind (`prettier-plugin-tailwindcss`). Rode `npm run format` antes de fechar a etapa.
+- Arquivos `.tsx` exportam só componentes (fast refresh); constantes e helpers vão para `lib/`.
