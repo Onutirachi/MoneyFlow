@@ -14,7 +14,7 @@ src/
   main.tsx, App.tsx, routes.tsx
   types/index.ts         tipos espelhados do backend
   lib/
-    api.ts               axios + token + 401 → logout
+    api.ts               axios (baseURL /api → proxy do Vite para o backend) + token + 401 → logout
     queryKeys.ts         chaves do TanStack Query
     format.ts            formatBRL, formatDate, formatMonth, methodLabel
     date.ts              currentMonth, addMonths, ...
@@ -43,6 +43,7 @@ src/
 
 ## Regras
 - **Nada de axios fora de `hooks/`** (e do `AuthContext`).
+- A API é acessada por `/api` no mesmo endereço do front (proxy em `vite.config.ts`, alvo `API_TARGET`, padrão 127.0.0.1:3334). Não coloque URL absoluta da API no código.
 - Depois de login ou cadastro, **só o `PublicOnlyRoute` redireciona** (para `location.state.from` ou `/`). As páginas não chamam `navigate()` depois de autenticar, porque isso cria uma corrida entre redirecionamentos (etapa 14).
 - Mutations de movimentos/custos fixos invalidam `movements`, `dashboard` e `accounts`.
 - Dinheiro: estado em centavos; exibir com `formatBRL`; digitar com `MoneyInput`.

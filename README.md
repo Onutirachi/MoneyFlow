@@ -22,6 +22,10 @@ Sistema de gerenciamento financeiro pessoal (TCC).
 ## Como rodar
 Requisitos: Node 20 ou superior.
 
+**Jeito mais fácil:** dois cliques em **`iniciar.cmd`**. Ele instala as dependências e cria os dados de demonstração se faltarem, abre as janelas do backend e do frontend e o navegador em http://localhost:5174. Para parar, feche as duas janelas.
+
+Manualmente:
+
 ```bash
 # terminal 1
 cd backend
@@ -37,7 +41,10 @@ npm run dev       # http://localhost:5174
 
 Login de demonstração: **demo@demo.com** / **123456**
 
-> As portas padrão são 3334/5174 porque 3333/5173 já estão em uso por outro projeto nesta máquina. Para mudar: `PORT=xxxx npm run dev` no backend e `VITE_API_URL=http://localhost:xxxx/api` no frontend (ver `.env.example`).
+> O frontend chama a API em `/api` no próprio endereço (5174), e o Vite repassa ao backend (proxy em `vite.config.ts`). Por isso não há problema de CORS nem de porta. As portas são 3334/5174 porque 3333/5173 já estão em uso por outro projeto nesta máquina. Para trocar o backend de porta: `PORT=xxxx npm run dev` e `API_TARGET=http://127.0.0.1:xxxx npm run dev` no frontend.
+
+### O que é o seed?
+`npm run seed` (no backend) **apaga** `backend/data/db.json` e o recria com um usuário de demonstração (**demo@demo.com / 123456**): 3 contas, custos fixos, compras parceladas e cerca de 7 meses de gastos, para o dashboard já ter gráficos. Use para demonstrar ou para voltar ao estado inicial. `npm run reset` deixa o banco vazio. Não precisa rodar toda vez: os dados ficam salvos no arquivo entre execuções.
 
 ## Qualidade
 ```bash

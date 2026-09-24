@@ -1,6 +1,6 @@
 # Contrato da API
 
-- Base URL: `http://localhost:3334/api`
+- Base URL: `http://localhost:3334/api` (o frontend acessa via proxy do Vite em `http://localhost:5174/api`)
 - JSON em todas as requisições e respostas.
 - Autenticação: header `Authorization: Bearer <token>` em todas as rotas, exceto `/auth/register`, `/auth/login` e `/health`.
 - Dinheiro em **centavos (inteiro)**. Datas `YYYY-MM-DD`, meses `YYYY-MM`.

@@ -13,6 +13,7 @@ Sistema de gerenciamento financeiro pessoal (TCC). Dois projetos independentes:
 Padrões específicos: [backend/CLAUDE.md](backend/CLAUDE.md) e [frontend/CLAUDE.md](frontend/CLAUDE.md).
 
 ## Comandos
+Atalho: `iniciar.cmd` na raiz (Windows) sobe tudo em duas janelas e abre o navegador.
 ```bash
 # backend (porta 3334)
 cd backend && npm install && npm run seed && npm run dev

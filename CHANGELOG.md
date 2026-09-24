@@ -94,3 +94,12 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 ## [Correção] — 2026-09-24
 ### Corrigido
 - Login e cadastro falhavam quando o e-mail tinha espaço no começo ou no fim, o que é comum com autocompletar e teclado de celular. No Zod 4, `z.email().trim()` valida **antes** de aplicar o trim. Agora é `z.string().trim().pipe(z.email())` no backend e no frontend, com teste novo (22 testes).
+
+## [Correção] — 2026-09-24 (acesso à API)
+### Alterado
+- Frontend chama a API por `/api` no mesmo endereço, com **proxy do Vite** para o backend. Isso elimina problemas de CORS, de resolução de `localhost` e de porta.
+- Vite escuta em IPv4 e IPv6 (antes só em `[::1]`: `127.0.0.1:5174` não abria).
+### Adicionado
+- Aviso "O backend não está respondendo" nas telas de login e cadastro, e mensagem clara quando a API está fora do ar.
+- `iniciar.cmd`: sobe backend e frontend em duas janelas e abre o navegador (instala dependências e cria o seed se faltarem).
+- README explica o que é o seed.

@@ -10,7 +10,8 @@ export const tokenStorage = {
 };
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3334/api',
+  // padrão: mesmo endereço do front; o proxy do Vite repassa /api ao backend (vite.config.ts)
+  baseURL: import.meta.env.VITE_API_URL ?? '/api',
 });
 
 api.interceptors.request.use((config) => {
@@ -42,7 +43,11 @@ export function getErrorMessage(error: unknown): string {
       const detail = body.error.details?.[0];
       return detail ? `${body.error.message}: ${detail.message}` : body.error.message;
     }
-    if (!error.response) return 'Não foi possível conectar à API. O backend está rodando?';
+    // sem resposta, ou 5xx sem o formato da API = o proxy do Vite não alcançou o backend
+    if (!error.response || error.response.status >= 500) {
+      return 'Backend fora do ar. Abra a pasta backend e rode "npm run dev" (ou use iniciar.cmd).';
+    }
+    return `Erro ${error.response.status} ao chamar a API`;
   }
   return 'Erro inesperado';
 }

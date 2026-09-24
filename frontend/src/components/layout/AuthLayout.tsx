@@ -1,5 +1,6 @@
 import { CalendarRange, CreditCard, PieChart } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { ApiStatusBanner } from './ApiStatusBanner';
 import { Brand } from './Sidebar';
 
 const FEATURES = [
@@ -45,6 +46,7 @@ export function AuthLayout({
             <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
             <p className="text-sm text-muted-foreground">{subtitle}</p>
           </div>
+          <ApiStatusBanner />
           {children}
         </div>
       </div>
