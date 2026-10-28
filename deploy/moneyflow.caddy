@@ -1,0 +1,12 @@
+# Regra do MoneyFlow no Caddy compartilhado da VPS. Copiar para /opt/proxy/sites/moneyflow.caddy
+# e recarregar: docker compose -f /opt/proxy/docker-compose.yml exec caddy caddy reload --config /etc/caddy/Caddyfile
+moneyflowapp.duckdns.org {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+	reverse_proxy moneyflow-web:80
+}

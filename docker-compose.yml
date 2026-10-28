@@ -4,7 +4,7 @@
 #
 # Desenvolvimento: só o banco          →  docker compose up -d db
 # Sistema completo (local ou na VPS)   →  docker compose up -d --build
-# Variáveis: copie .env.example para .env (na raiz) e ajuste.
+# Variáveis: copie .env.example para .env (na raiz) e ajuste. Na VPS: ver docs/deploy.md.
 name: moneyflow
 
 services:
@@ -47,8 +47,9 @@ services:
     image: moneyflow-web
     container_name: moneyflow-web
     restart: unless-stopped
+    # só na própria máquina; na VPS quem recebe da internet é o Caddy (docker-compose.vps.yml)
     ports:
-      - '${WEB_PORT:-8080}:80'
+      - '127.0.0.1:${WEB_PORT:-8080}:80'
     depends_on:
       api:
         condition: service_healthy

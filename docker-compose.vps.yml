@@ -1,0 +1,12 @@
+# Só na VPS: coloca o moneyflow-web na rede "proxy" do Caddy compartilhado (/opt/proxy),
+# que faz o HTTPS e encaminha moneyflowapp.duckdns.org para cá (deploy/moneyflow.caddy).
+# Ativado pelo .env da VPS: COMPOSE_FILE=docker-compose.yml:docker-compose.vps.yml
+services:
+  web:
+    networks:
+      - default # para alcançar a api
+      - proxy # para o Caddy alcançar o web
+
+networks:
+  proxy:
+    external: true
