@@ -122,7 +122,7 @@ Todos os blocos respeitam o mês selecionado e o filtro opcional por conta.
 Rota desconhecida → `/`. Rotas privadas sem sessão → `/login`.
 
 ## 7. Comportamentos de borda conhecidos
-Comportamentos reais do código que não são óbvios. Os itens 1–3 estão planejados para a etapa 16 do [ROADMAP](ROADMAP.md).
+Comportamentos reais do código que não são óbvios. Os itens 1–3 estão planejados para a etapa 17 do [ROADMAP](ROADMAP.md).
 
 1. **Materialização sem limite à frente:** abrir um mês distante (ex.: 2035) em Movimentos gera de uma vez todas as ocorrências dos custos fixos sem fim até aquele mês, e elas ficam gravadas.
 2. **Mês inicial retroativo:** editar um custo fixo para um `startMonth` anterior gera as ocorrências dos meses passados que faltavam na próxima consulta. Avançar o `startMonth` não remove as ocorrências passadas.

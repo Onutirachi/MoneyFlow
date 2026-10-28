@@ -117,3 +117,11 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 ### Corrigido
 - Em relação ao código original do Postgres: a edição de parcelas em grupo duplicava o sufixo `i/n`; um token de usuário apagado gerava 500 em vez de 401; `upcomingTotal` ignorava os avulsos; valem de novo as categorias padrão, os limites de validação e as ordenações do mock.
 - `regras-de-negocio.md`: compromissos futuros incluem as saídas avulsas.
+
+## [Etapa 16] — 2026-10-28
+### Adicionado
+- `docker-compose.yml` na raiz (projeto **moneyflow**) com três containers: `moneyflow-web` (nginx com o front e proxy `/api`), `moneyflow-api` (backend compilado) e `moneyflow-db` (PostgreSQL com volume). Só o web é exposto (ADR 0009).
+- `backend/Dockerfile` e `frontend/Dockerfile` multi-stage, `frontend/nginx.conf`, `.env.example` da raiz.
+- `docs/deploy.md`: como publicar na VPS, atualizar e fazer backup.
+### Alterado
+- Desenvolvimento usa `docker compose up -d db` na raiz. `backend/docker-compose.yml` foi removido e `iniciar.cmd` atualizado.

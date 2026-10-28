@@ -1,0 +1,57 @@
+# MoneyFlow: três containers agrupados no projeto "moneyflow" (ADR 0009).
+#
+#   Internet → web (nginx: front + proxy /api) → api (Node) → db (PostgreSQL)
+#
+# Desenvolvimento: só o banco          →  docker compose up -d db
+# Sistema completo (local ou na VPS)   →  docker compose up -d --build
+# Variáveis: copie .env.example para .env (na raiz) e ajuste.
+name: moneyflow
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: moneyflow-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: moneyflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-moneyflow}
+      POSTGRES_DB: moneyflow
+    # só na própria máquina (127.0.0.1): o backend em dev e manutenção via túnel SSH; nunca na internet
+    ports:
+      - '127.0.0.1:${DB_PORT:-5433}:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U moneyflow -d moneyflow']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    image: moneyflow-api
+    container_name: moneyflow-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://moneyflow:${POSTGRES_PASSWORD:-moneyflow}@db:5432/moneyflow
+      # obrigatório: sem ele a API não sobe (config.ts, NODE_ENV=production)
+      JWT_SECRET: ${JWT_SECRET:-}
+      PORT: 3334
+    depends_on:
+      db:
+        condition: service_healthy
+    # sem "ports": só o web alcança a API, pela rede interna
+
+  web:
+    build: ./frontend
+    image: moneyflow-web
+    container_name: moneyflow-web
+    restart: unless-stopped
+    ports:
+      - '${WEB_PORT:-8080}:80'
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  db-data:

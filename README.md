@@ -22,15 +22,15 @@ Sistema de gerenciamento financeiro pessoal (TCC).
 ## Como rodar
 Requisitos: Node 20.12 ou superior e [Docker Desktop](https://www.docker.com/products/docker-desktop/) aberto (é ele que roda o PostgreSQL).
 
-**Jeito mais fácil:** dois cliques em **`iniciar.cmd`**. Ele sobe o banco no Docker, instala as dependências, cria os dados de demonstração na primeira vez, abre as janelas do backend e do frontend e o navegador em http://localhost:5174. Para parar, feche as duas janelas. O banco continua rodando no Docker; para desligar, rode `docker compose stop` na pasta `backend`.
+**Jeito mais fácil:** dois cliques em **`iniciar.cmd`**. Ele sobe o banco no Docker, instala as dependências, cria os dados de demonstração na primeira vez, abre as janelas do backend e do frontend e o navegador em http://localhost:5174. Para parar, feche as duas janelas. O banco continua rodando no Docker; para desligar, rode `docker compose stop db` na raiz.
 
 Manualmente:
 
 ```bash
 # terminal 1
+docker compose up -d db   # na raiz: PostgreSQL (container moneyflow-db) na porta 5433
 cd backend
 cp .env.example .env
-docker compose up -d   # PostgreSQL na porta 5433
 npm install
 npm run seed      # dados de demonstração (npm run reset = banco vazio)
 npm run dev       # http://localhost:3334/api
@@ -44,6 +44,15 @@ npm run dev       # http://localhost:5174
 Login de demonstração: **demo@demo.com** / **123456**
 
 > O frontend chama a API em `/api` no próprio endereço (5174), e o Vite repassa ao backend (proxy em `vite.config.ts`). Por isso não há problema de CORS nem de porta. As portas são 3334/5174 porque 3333/5173 já estão em uso por outro projeto nesta máquina. Para trocar o backend de porta: `PORT=xxxx npm run dev` e `API_TARGET=http://127.0.0.1:xxxx npm run dev` no frontend.
+
+### Tudo em containers (como na VPS)
+O `docker-compose.yml` da raiz sobe o sistema completo em três containers, agrupados como **moneyflow**: `moneyflow-web` (nginx com o front), `moneyflow-api` e `moneyflow-db`.
+```bash
+cp .env.example .env
+docker compose up -d --build --wait
+docker compose exec api node dist/seed.js --if-empty   # dados de demonstração
+```
+O site abre em http://localhost:8080. Para publicar na VPS, siga [docs/deploy.md](docs/deploy.md).
 
 ### O que é o seed?
 `npm run seed` (no backend) **apaga todos os dados do banco** e cria um usuário de demonstração (**demo@demo.com / 123456**): 3 contas, custos fixos, compras parceladas e cerca de 7 meses de gastos, para o dashboard já ter gráficos. Use para demonstrar ou para voltar ao estado inicial. `npm run reset` deixa o banco vazio. Não precisa rodar toda vez: os dados ficam salvos no volume do Docker entre execuções.

@@ -4,7 +4,7 @@ API em Node + Express 5 + TypeScript com PostgreSQL (driver `pg`, SQL escrito à
 
 ## Comandos
 ```bash
-docker compose up -d   # PostgreSQL 16 na porta 5433 (dados no volume moneyflow-data)
+docker compose up -d db   # NA RAIZ: PostgreSQL 16 (moneyflow-db) na porta 5433
 npm run dev            # tsx watch, porta 3334 (aplica o schema ao subir)
 npm run seed           # APAGA tudo e cria o usuário demo (demo@demo.com / 123456)
 npm run seed -- --if-empty   # só se o banco não tiver usuários (usado pelo iniciar.cmd)
@@ -18,7 +18,7 @@ Configuração em `.env` (copie de `.env.example`): `PORT`, `DATABASE_URL`, `JWT
 ## Estrutura
 ```
 db/schema.sql          esquema idempotente (CREATE ... IF NOT EXISTS), aplicado na subida
-docker-compose.yml     Postgres de desenvolvimento
+Dockerfile             imagem do container moneyflow-api (compose na raiz, ADR 0009)
 src/
   server.ts            migra e sobe o servidor (mensagem clara se o banco estiver fora)
   app.ts               express app (cors, json, rotas, errorHandler)

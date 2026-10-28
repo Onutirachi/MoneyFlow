@@ -12,3 +12,4 @@ Cada ADR registra **uma** decisão importante, o contexto e as alternativas. ADR
 | [0006](0006-custos-fixos-edicao-regenera-futuro.md) | Editar/pausar/excluir custo fixo regenera as ocorrências futuras | Aceita |
 | [0007](0007-visualizacao-de-dados.md) | Padrões de visualização do dashboard (skill dataviz, paleta validada) | Aceita |
 | [0008](0008-backend-postgresql.md) | Backend real com PostgreSQL (`pg` + SQL, Docker em dev) | Aceita |
+| [0009](0009-containers-web-api-db.md) | Três containers (web, api, db) num único compose `moneyflow` | Aceita |

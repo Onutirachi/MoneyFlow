@@ -82,5 +82,5 @@ Resultado esperado em http://localhost:5174 com `demo@demo.com` / `123456`:
 
 ## Pendências / próximos passos
 - Publicar em containers na VPS para o grupo testar: Dockerfile do backend, build estático do frontend servido por nginx com proxy `/api`, `docker-compose` de produção, HTTPS e `JWT_SECRET` forte.
-- Etapa 16: casos de borda dos custos fixos (ver especificação §7). Continuam valendo nesta versão.
+- Etapa 17: casos de borda dos custos fixos (ver especificação §7). Continuam valendo nesta versão.
 - A pasta `backendmatheus/` (zip original) não entra no repositório e pode ser apagada.

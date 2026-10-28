@@ -3,7 +3,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-// Porta do backend mock (mesma de backend/src/config.ts)
+// Porta do backend (mesma de backend/src/config.ts). Em produção o proxy é o nginx (nginx.conf).
 const API_TARGET = process.env.API_TARGET ?? 'http://127.0.0.1:3334';
 
 export default defineConfig({

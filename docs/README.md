@@ -5,6 +5,7 @@
 | [especificacao.md](especificacao.md) | Requisitos funcionais e não funcionais, telas, comportamentos de borda |
 | [ROADMAP.md](ROADMAP.md) | Lista de etapas e status atual |
 | [padroes.md](padroes.md) | Padrões de código, estrutura de pastas, git |
+| [deploy.md](deploy.md) | Como publicar na VPS com Docker (e testar localmente) |
 | [api.md](api.md) | Contrato da API — rotas, payloads, erros |
 | [regras-de-negocio.md](regras-de-negocio.md) | Como funcionam parcelamento, custos fixos, métodos, saldo |
 | [etapas/](etapas/) | Diário: o que foi feito em cada etapa e como testar |

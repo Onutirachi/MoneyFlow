@@ -15,14 +15,17 @@ Padrões específicos: [backend/CLAUDE.md](backend/CLAUDE.md) e [frontend/CLAUDE
 ## Comandos
 Atalho: `iniciar.cmd` na raiz (Windows) sobe tudo em duas janelas e abre o navegador.
 ```bash
-# backend (porta 3334) — requer Docker para o PostgreSQL (porta 5433)
-cd backend && docker compose up -d && npm install && npm run seed && npm run dev
+# banco (raiz): container moneyflow-db na porta 5433
+docker compose up -d db
+# backend (porta 3334)
+cd backend && npm install && npm run seed && npm run dev
 # frontend (porta 5174)
 cd frontend && npm install && npm run dev
 # qualidade (rodar nos dois projetos)
 npm run typecheck && npm run lint && npm run build   # backend também: npm test
 ```
 Usuário do seed: `demo@demo.com` / `123456`.
+Sistema completo em containers (web/api/db, como na VPS): `docker compose up -d --build` na raiz, em http://localhost:8080. Ver [docs/deploy.md](docs/deploy.md).
 
 ## Documentação (consultar antes de mudar algo)
 - [docs/README.md](docs/README.md) — índice

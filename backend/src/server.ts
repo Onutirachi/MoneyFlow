@@ -8,7 +8,7 @@ try {
 } catch (err) {
   const host = config.DATABASE_URL.replace(/\/\/[^@]*@/, '//'); // sem a senha
   console.error(`\nNão foi possível conectar ao PostgreSQL em ${host}.`);
-  console.error('Suba o banco com "docker compose up -d" na pasta backend e tente de novo.\n');
+  console.error('Suba o banco com "docker compose up -d db" na raiz do projeto e tente de novo.\n');
   console.error(err instanceof Error ? err.message : err);
   process.exit(1);
 }

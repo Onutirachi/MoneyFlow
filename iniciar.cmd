@@ -1,7 +1,7 @@
 @echo off
 rem Sobe banco (Docker), backend (3334) e frontend (5174) e abre o navegador.
 rem Uso: dois cliques neste arquivo. Requer o Docker Desktop aberto.
-rem Para parar: feche as duas janelas (o banco continua no Docker; "docker compose stop" na pasta backend para ele).
+rem Para parar: feche as duas janelas (o banco continua no Docker; "docker compose stop db" na raiz para ele).
 setlocal
 cd /d "%~dp0"
 
@@ -16,8 +16,8 @@ docker info >nul 2>nul || (
 
 if not exist "backend\.env" copy "backend\.env.example" "backend\.env" >nul
 
-echo Subindo o banco PostgreSQL...
-docker compose -f backend\docker-compose.yml up -d --wait || goto :erro
+echo Subindo o banco PostgreSQL (container moneyflow-db)...
+docker compose up -d --wait db || goto :erro
 
 if not exist "backend\node_modules" (
   echo Instalando dependencias do backend...
