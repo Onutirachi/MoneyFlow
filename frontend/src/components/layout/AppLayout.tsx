@@ -1,6 +1,6 @@
 import { Menu } from 'lucide-react';
 import { useState } from 'react';
-import { Outlet } from 'react-router';
+import { Link, Outlet } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Brand, NavLinks, Sidebar } from './Sidebar';
@@ -32,6 +32,10 @@ export function AppLayout() {
               <NavLinks onNavigate={() => setMenuOpen(false)} />
             </SheetContent>
           </Sheet>
+          {/* no celular a barra lateral fica escondida: a marca aparece no topo */}
+          <Link to="/" className="md:hidden" aria-label="Ir para o dashboard">
+            <Brand className="px-0" />
+          </Link>
           <div className="flex-1" />
           <ThemeToggle />
           <UserMenu />

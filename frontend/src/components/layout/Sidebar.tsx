@@ -1,15 +1,12 @@
-import { PiggyBank } from 'lucide-react';
 import { NavLink, useSearchParams } from 'react-router';
+import { Logo } from '@/components/common/Logo';
 import { cn } from '@/lib/utils';
 import { NAV_ITEMS } from './navItems';
 
-export function Brand() {
+export function Brand({ className }: { className?: string }) {
   return (
-    <div className="flex items-center gap-2 px-2 text-base font-semibold">
-      <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-        <PiggyBank className="size-4" />
-      </span>
-      Finanças
+    <div className={cn('flex h-8 items-center px-2 text-foreground', className)}>
+      <Logo className="h-7 w-auto" />
     </div>
   );
 }

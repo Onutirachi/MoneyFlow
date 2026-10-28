@@ -126,3 +126,13 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 ### Alterado
 - Desenvolvimento usa `docker compose up -d db` na raiz. `backend/docker-compose.yml` foi removido e `iniciar.cmd` atualizado.
 - Publicação na VPS em **https://moneyflowapp.duckdns.org**, atrás do Caddy compartilhado: `docker-compose.vps.yml`, `deploy/moneyflow.caddy`, e o web abrindo porta só em `127.0.0.1`.
+
+## [Etapa 17] — 2026-10-28
+### Adicionado
+- Logo MoneyFlow (`components/common/Logo.tsx`, a partir de `docs/marca/MoneyFlowLogo.svg`), que se adapta ao tema claro e ao escuro.
+### Alterado
+- Marca genérica ("Finanças" com cofrinho) substituída pelo logo na barra lateral, no menu do celular e nas telas de login e cadastro. No celular, o logo também aparece na barra do topo.
+- Favicon próprio (as três setas do logo), no lugar do logo padrão do Vite. Título da aba: "MoneyFlow".
+- Dica da conta de demonstração no login sem a instrução de desenvolvimento (`npm run seed`).
+### Removido
+- Pasta `backendmatheus/` (já incorporada na etapa 15). `.vscode/` passa a ser ignorada pelo git.

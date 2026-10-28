@@ -1,5 +1,6 @@
 import { CalendarRange, CreditCard, PieChart } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { Logo } from '@/components/common/Logo';
 import { ApiStatusBanner } from './ApiStatusBanner';
 import { Brand } from './Sidebar';
 
@@ -21,7 +22,7 @@ export function AuthLayout({
   return (
     <div className="grid min-h-svh bg-background lg:grid-cols-2">
       <div className="hidden flex-col justify-between bg-muted/50 p-10 lg:flex">
-        <Brand />
+        <Logo className="h-10 w-auto self-start text-foreground" />
         <div className="space-y-6">
           <h2 className="max-w-md text-3xl font-semibold tracking-tight">
             Saiba para onde vai cada real, e se você economizou este mês.

@@ -64,8 +64,7 @@ export function LoginPage() {
         </Link>
       </p>
       <p className="rounded-lg border border-dashed p-3 text-center text-xs text-muted-foreground">
-        Demonstração: <b>demo@demo.com</b> / <b>123456</b> (rode <code>npm run seed</code> no
-        backend)
+        Conta de demonstração: <b>demo@demo.com</b> / <b>123456</b>
       </p>
     </AuthLayout>
   );

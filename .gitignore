@@ -9,3 +9,6 @@ coverage/
 
 # config local do Claude Code
 .claude/settings.local.json
+
+# configurações locais do editor
+.vscode/

@@ -20,7 +20,8 @@ Legenda: ⬜ pendente · 🔄 em andamento · ✅ concluída
 | 14 | Revisão final e verificação end-to-end | ✅ | [14-revisao-final](etapas/14-revisao-final.md) |
 | 15 | Backend real com PostgreSQL (substitui o mock) | ✅ | [15-backend-postgres](etapas/15-backend-postgres.md) |
 | 16 | Containers (web, api, db) e publicação na VPS (https://moneyflowapp.duckdns.org) | ✅ | [16-containers](etapas/16-containers.md) |
-| 17 | Backend: bordas dos custos fixos (limite de materialização, `startMonth` retroativo, método removido da conta) — ver [especificação §7](especificacao.md#7-comportamentos-de-borda-conhecidos) | ⬜ | — |
+| 17 | Identidade visual: logo MoneyFlow, favicon e título | ✅ | [17-identidade-visual](etapas/17-identidade-visual.md) |
+| 18 | Backend: bordas dos custos fixos (limite de materialização, `startMonth` retroativo, método removido da conta) — ver [especificação §7](especificacao.md#7-comportamentos-de-borda-conhecidos) | ⬜ | — |
 
 ## Ideias futuras (fora do escopo atual)
 - Fatura de cartão de crédito (dia de fechamento/vencimento por conta).
