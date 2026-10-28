@@ -1,95 +1,95 @@
 # Publicação na VPS (Docker)
 
-O sistema roda em três containers agrupados no projeto **moneyflow** ([ADR 0009](adr/0009-containers-web-api-db.md)):
+**No ar:** https://moneyflowapp.duckdns.org (desde 2026-10-28).
+
+## Como está montado
+A VPS (Oracle Cloud Always Free, Ubuntu 24.04 ARM Ampere, `afvps.duckdns.org`, usuário `ubuntu`) hospeda mais de um projeto. Um **Caddy compartilhado** (`/opt/proxy`) é o único dono das portas 80/443: recebe os acessos, escolhe o projeto pelo domínio e cuida do HTTPS (Let's Encrypt) sozinho.
 
 ```
-Internet :80 → moneyflow-web (nginx: front + proxy /api) → moneyflow-api (Node) → moneyflow-db (PostgreSQL)
+navegador ─https─► Caddy (/opt/proxy, rede "proxy")
+                     ├─ capturax.duckdns.org     → capturax-signal   (outro projeto)
+                     └─ moneyflowapp.duckdns.org → moneyflow-web ─► moneyflow-api ─► moneyflow-db
 ```
 
-Só o `moneyflow-web` fica exposto. A API e o banco só são alcançáveis pela rede interna do Docker; o banco aparece em `127.0.0.1:5433` apenas para manutenção na própria VPS.
-
-## Requisitos
-- VPS Linux (os comandos abaixo são para Ubuntu/Debian) com pelo menos 1 GB de RAM.
-- Acesso SSH com um usuário que tenha `sudo`.
-- Porta 80 livre (e 443, quando houver HTTPS).
-
-## 1. Instalar o Docker (uma vez)
-```bash
-curl -fsSL https://get.docker.com | sudo sh
-sudo usermod -aG docker $USER   # usar docker sem sudo (saia e entre de novo no SSH)
-docker compose version          # confere
-```
-
-## 2. Baixar o projeto
-```bash
-git clone <url-do-repositório> moneyflow
-cd moneyflow
-```
-
-## 3. Configurar
-```bash
-cp .env.example .env
-nano .env
-```
-Ajuste no `.env`:
-| Variável | Valor na VPS |
+| Onde | O quê |
 |---|---|
-| `JWT_SECRET` | resultado de `openssl rand -hex 32` |
-| `POSTGRES_PASSWORD` | resultado de `openssl rand -hex 16` (**antes** da primeira subida; depois disso não muda o banco) |
-| `WEB_PORT` | `80` |
+| `/opt/moneyflow` | clone deste repositório (dono: `ubuntu`) |
+| `/opt/moneyflow/.env` | segredos gerados na VPS (`chmod 600`, fora do git), com `COMPOSE_FILE=docker-compose.yml:docker-compose.vps.yml` |
+| `docker-compose.vps.yml` | coloca o `moneyflow-web` na rede `proxy` do Caddy |
+| `/opt/proxy/sites/moneyflow.caddy` | regra do domínio (cópia de [`deploy/moneyflow.caddy`](../deploy/moneyflow.caddy)) |
+| volume `moneyflow_db-data` | os dados do banco |
 
-O `.env` não vai para o git. Guarde as senhas num lugar seguro.
+Nenhuma porta do MoneyFlow fica aberta para a internet: o web e o banco só escutam em `127.0.0.1` (8080 e 5433), e a API não publica porta. O acesso é sempre pelo domínio. Abrir pelo IP não funciona, porque o Caddy escolhe o site pelo nome.
 
-## 4. Subir
+O domínio `moneyflowapp.duckdns.org` precisa apontar para o IP da VPS (163.176.189.160), o que se configura no painel do DuckDNS.
+
+## Acesso SSH
 ```bash
-docker compose up -d --build --wait
-docker compose ps          # os três "healthy"
+ssh -i ~/.ssh/capturax_vps ubuntu@afvps.duckdns.org
 ```
-O site abre em `http://<ip-da-vps>`.
-
-Dados de demonstração (opcional, só se o banco estiver vazio):
-```bash
-docker compose exec api node dist/seed.js --if-empty   # demo@demo.com / 123456
-```
-> `node dist/seed.js` **sem** `--if-empty` apaga todos os dados. Na VPS, cada pessoa do grupo deve criar o próprio cadastro.
-
-## 5. Firewall
-```bash
-sudo ufw allow OpenSSH
-sudo ufw allow 80/tcp
-sudo ufw enable
-```
-O Docker abre as portas publicadas por conta própria, por isso o compose só publica a 80 (web) e a 5433 presa a `127.0.0.1` (banco).
+O login é só por chave: a privada fica na máquina de quem acessa, e a pública fica em `~/.ssh/authorized_keys` na VPS. Para dar acesso a outra pessoa, ela gera a própria chave (`ssh-keygen -t ed25519`) e você adiciona a parte `.pub` nesse arquivo. Para revogar, é só apagar a linha.
 
 ## Atualizar para uma versão nova
+Depois de fazer `git push` com as mudanças:
 ```bash
-cd moneyflow
+ssh -i ~/.ssh/capturax_vps ubuntu@afvps.duckdns.org
+cd /opt/moneyflow
 git pull
 docker compose up -d --build --wait
 ```
-Só os containers que mudaram são recriados. O banco e o volume `moneyflow_db-data` continuam como estão.
+Só os containers que mudaram são recriados. O banco e o volume continuam como estão. Se a regra do Caddy mudar (`deploy/moneyflow.caddy`), copie e recarregue como no passo 5 abaixo.
 
-## Dia a dia
+## Dia a dia (dentro de `/opt/moneyflow`)
 | Tarefa | Comando |
 |---|---|
 | Ver status | `docker compose ps` |
 | Logs da API (ao vivo) | `docker compose logs -f api` |
 | Reiniciar só a API | `docker compose restart api` |
 | Parar tudo (dados ficam) | `docker compose down` |
-| Backup do banco | `docker compose exec -T db pg_dump -U moneyflow moneyflow > backup-$(date +%F).sql` |
+| Backup do banco | `docker compose exec -T db pg_dump -U moneyflow moneyflow > ~/backup-$(date +%F).sql` |
 | Restaurar backup | `docker compose exec -T db psql -U moneyflow moneyflow < backup.sql` (em banco vazio) |
 | Abrir o psql | `docker compose exec db psql -U moneyflow` |
+| Logs do HTTPS/domínio | `docker logs proxy-caddy-1 --since 10m` |
 
-> **Nunca** rode `docker compose down -v` na VPS: o `-v` apaga o volume do banco, e com ele todos os dados.
+> **Nunca** rode `docker compose down -v` nem `node dist/seed.js` (sem `--if-empty`) na VPS: o primeiro apaga o volume do banco, e o segundo apaga todos os dados.
+
+## Instalação do zero (como foi feita)
+Pré-requisitos: Docker instalado e o Caddy compartilhado rodando em `/opt/proxy` com a rede `proxy`.
+```bash
+# 1. clonar
+sudo mkdir /opt/moneyflow && sudo chown ubuntu:ubuntu /opt/moneyflow
+git clone https://github.com/Onutirachi/MoneyFlow.git /opt/moneyflow
+cd /opt/moneyflow
+
+# 2. segredos (gerados aqui, nunca copiados de outra máquina)
+cat > .env <<ENV
+JWT_SECRET=$(openssl rand -hex 32)
+POSTGRES_PASSWORD=$(openssl rand -hex 16)
+WEB_PORT=8080
+DB_PORT=5433
+COMPOSE_FILE=docker-compose.yml:docker-compose.vps.yml
+ENV
+chmod 600 .env
+
+# 3. subir os três containers
+docker compose up -d --build --wait
+
+# 4. usuário de demonstração (só se o banco estiver vazio)
+docker compose exec -T api node dist/seed.js --if-empty < /dev/null
+
+# 5. regra no Caddy: validar ANTES de recarregar (um erro derrubaria os outros sites)
+sudo cp deploy/moneyflow.caddy /opt/proxy/sites/moneyflow.caddy
+cd /opt/proxy
+docker compose exec -T caddy caddy validate --config /etc/caddy/Caddyfile \
+  && docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
+```
+O certificado sai em segundos, desde que o domínio já aponte para a VPS.
 
 ## Testar localmente antes
-O mesmo `docker-compose.yml` roda na sua máquina:
+O mesmo compose roda em qualquer máquina com Docker, sem o Caddy:
 ```bash
-cp .env.example .env              # WEB_PORT=8080 já vem no exemplo
+cp .env.example .env
 docker compose up -d --build --wait
 docker compose exec api node dist/seed.js --if-empty
 # http://localhost:8080
 ```
-
-## Pendente
-- **HTTPS:** exige um domínio apontando para a VPS. Sem ele, o site roda em `http://` e o navegador mostra "não seguro". As senhas trafegam sem criptografia, então não usem senhas reais por enquanto.

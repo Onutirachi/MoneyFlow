@@ -125,3 +125,4 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - `docs/deploy.md`: como publicar na VPS, atualizar e fazer backup.
 ### Alterado
 - Desenvolvimento usa `docker compose up -d db` na raiz. `backend/docker-compose.yml` foi removido e `iniciar.cmd` atualizado.
+- Publicação na VPS em **https://moneyflowapp.duckdns.org**, atrás do Caddy compartilhado: `docker-compose.vps.yml`, `deploy/moneyflow.caddy`, e o web abrindo porta só em `127.0.0.1`.

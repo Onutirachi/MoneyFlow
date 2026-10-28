@@ -2,6 +2,8 @@
 
 Sistema de gerenciamento financeiro pessoal (TCC).
 
+**No ar:** https://moneyflowapp.duckdns.org. Crie sua conta ou use o demo `demo@demo.com` / `123456`.
+
 ## Funcionalidades
 - **Login e cadastro** (JWT).
 - **Contas** (ex.: Banco XPTO, Carteira Física), cada uma com seus **métodos de pagamento** (Dinheiro, PIX, Crédito, Débito).

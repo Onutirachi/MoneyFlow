@@ -1,6 +1,6 @@
 # Etapa 16 — Containers (web, api, db) e publicação na VPS
 
-- **Status:** ✅ concluída (publicação na VPS pendente: dados de acesso)
+- **Status:** ✅ concluída. No ar em https://moneyflowapp.duckdns.org
 - **Data:** 2026-10-28
 - **Commit:** ver `git log --grep "etapa 16"`
 
@@ -20,6 +20,12 @@ Um único `docker-compose.yml` na raiz descreve os três. Em desenvolvimento, so
 - **Desenvolvimento:** `backend/docker-compose.yml` foi removido. `docker compose up -d db` na raiz sobe o mesmo `moneyflow-db` na 5433; `iniciar.cmd`, READMEs e CLAUDE.md foram atualizados.
 - **`docs/deploy.md`:** passo a passo da VPS (instalar Docker, `.env` com segredos, subir, seed opcional, firewall, atualizar, backup e restauração).
 - [ADR 0009](../adr/0009-containers-web-api-db.md).
+- **Publicado na VPS** (Oracle ARM, `afvps.duckdns.org`) atrás do Caddy compartilhado que já atendia o capturax:
+  - `docker-compose.vps.yml` coloca o web na rede `proxy`;
+  - a regra `deploy/moneyflow.caddy` foi copiada para `/opt/proxy/sites/`;
+  - o certificado Let's Encrypt foi emitido para `moneyflowapp.duckdns.org`;
+  - a porta do web passou a abrir só em `127.0.0.1`.
+- Banco da VPS começou vazio, só com o usuário demo (`seed --if-empty`).
 
 ## Arquivos principais
 | Arquivo | Papel |
@@ -29,7 +35,9 @@ Um único `docker-compose.yml` na raiz descreve os três. Em desenvolvimento, so
 | `backend/Dockerfile` | imagem `moneyflow-api` |
 | `frontend/Dockerfile` | imagem `moneyflow-web` |
 | `frontend/nginx.conf` | front estático + proxy `/api` |
-| `docs/deploy.md` | guia de publicação na VPS |
+| `docker-compose.vps.yml` | na VPS: web na rede `proxy` do Caddy |
+| `deploy/moneyflow.caddy` | regra do domínio no Caddy compartilhado |
+| `docs/deploy.md` | como está montado na VPS, como atualizar, backup |
 
 ## Decisões
 - Containers separados, um compose só, nginx na frente: [ADR 0009](../adr/0009-containers-web-api-db.md).
@@ -52,7 +60,13 @@ Resultado esperado:
 
 Verificado em 2026-10-28 com Docker 29.9: todos os itens acima, mais os 24 testes do backend rodando contra o `moneyflow-db`.
 
+Na VPS, verificado no mesmo dia, de fora do servidor:
+- https://moneyflowapp.duckdns.org responde 200 com certificado válido, e `http://` redireciona para `https://`;
+- o login demo e o dashboard funcionam;
+- as portas 8080 e 5433 estão fechadas para a internet;
+- o capturax continuou respondendo 200.
+
 ## Pendências / próximos passos
-- Publicar na VPS seguindo `docs/deploy.md`. Faltam os dados do servidor: sistema, Docker instalado, domínio, portas livres.
-- HTTPS quando houver domínio.
+- Backup automático do banco (hoje é manual, ver `docs/deploy.md`).
+- Deploy automático no `git push` (hoje é `git pull` + `docker compose up -d --build` na VPS).
 - O volume antigo `backend_moneyflow-data` (dados de demonstração do dev anterior) não é mais usado e pode ser apagado com `docker volume rm backend_moneyflow-data`.
