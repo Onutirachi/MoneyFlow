@@ -4,7 +4,8 @@
 - JSON em todas as requisições e respostas.
 - Autenticação: header `Authorization: Bearer <token>` em todas as rotas, exceto `/auth/register`, `/auth/login` e `/health`.
 - Dinheiro em **centavos (inteiro)**. Datas `YYYY-MM-DD`, meses `YYYY-MM`.
-- Recursos de outro usuário respondem `404`.
+- Recursos de outro usuário respondem `404`. Id na URL que não é um UUID também responde `404`.
+- Implementação: PostgreSQL (ADR 0008).
 
 ## Formato de erro
 ```json
@@ -12,7 +13,7 @@
 ```
 | Status | code | Quando |
 |---|---|---|
-| 400 | `VALIDATION_ERROR` | body/query inválido (com `details`) |
+| 400 | `VALIDATION_ERROR` | body/query inválido (com `details`) ou JSON malformado |
 | 400 | `METHOD_NOT_ALLOWED` | método de pagamento não cadastrado na conta |
 | 400 | `CATEGORY_TYPE_MISMATCH` | categoria de tipo diferente do movimento |
 | 401 | `UNAUTHORIZED` | token ausente/inválido/expirado |
@@ -20,6 +21,7 @@
 | 404 | `NOT_FOUND` | recurso inexistente |
 | 409 | `EMAIL_IN_USE` | cadastro com e-mail existente |
 | 409 | `ACCOUNT_IN_USE` / `CATEGORY_IN_USE` | exclusão de conta/categoria com vínculos |
+| 500 | `INTERNAL_ERROR` | erro inesperado (ex.: banco fora do ar) |
 
 ## Tipos
 ```ts
@@ -67,7 +69,7 @@ interface RecurringCost {
 | POST | `/auth/login` | `{ email, password }` | `200 { token, user }` · `401 INVALID_CREDENTIALS` |
 | GET | `/auth/me` | — | `200 { user }` |
 
-Novo usuário recebe categorias padrão automaticamente. Token expira em 7 dias.
+Novo usuário recebe categorias padrão automaticamente. Token expira em 7 dias. Token de um usuário que não existe mais (ex.: após `npm run seed`) responde `401`.
 
 ## Contas
 | Método | Rota | Body | Resposta |

@@ -1,18 +1,15 @@
 import { z } from 'zod';
+import { text } from './common.js';
 
-// trim ANTES de validar: z.email().trim() valida primeiro e rejeita espaços de autocompletar
-const emailSchema = z.string().trim().toLowerCase().pipe(z.email());
+const email = z.string().trim().toLowerCase().pipe(z.email('E-mail inválido'));
 
 export const registerSchema = z.object({
-  name: z.string().trim().min(2).max(80),
-  email: emailSchema,
-  password: z.string().min(6).max(100),
+  name: text(80).min(2, 'Informe ao menos 2 caracteres'),
+  email,
+  password: z.string().min(6, 'A senha deve ter ao menos 6 caracteres').max(72),
 });
 
 export const loginSchema = z.object({
-  email: emailSchema,
-  password: z.string().min(1),
+  email: z.string().trim().toLowerCase().min(1, 'Informe o e-mail'),
+  password: z.string().min(1, 'Informe a senha'),
 });
-
-export type RegisterInput = z.infer<typeof registerSchema>;
-export type LoginInput = z.infer<typeof loginSchema>;

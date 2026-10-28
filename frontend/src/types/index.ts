@@ -26,7 +26,6 @@ export interface Account {
   methods: PaymentMethod[];
   /** saldo até hoje, centavos */
   balance: number;
-  createdAt: string;
 }
 
 export type AccountInput = Pick<Account, 'name' | 'color' | 'initialBalance' | 'methods'>;
@@ -92,10 +91,9 @@ export interface RecurringCost {
   endMonth: string | null;
   active: boolean;
   materializedMonths: string[];
-  createdAt: string;
 }
 
-export type RecurringInput = Omit<RecurringCost, 'id' | 'materializedMonths' | 'createdAt'>;
+export type RecurringInput = Omit<RecurringCost, 'id' | 'materializedMonths'>;
 
 interface Totals {
   income: number;

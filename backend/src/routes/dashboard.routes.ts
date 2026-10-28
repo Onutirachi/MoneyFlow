@@ -1,10 +1,12 @@
 import { Router } from 'express';
-import { dashboardQuerySchema } from '../schemas/dashboard.schema.js';
-import * as dashboard from '../services/dashboard.service.js';
+import { dashboardQuery } from '../schemas/dashboard.schema.js';
+import { getDashboard } from '../services/dashboard.service.js';
 import { parse } from '../utils/validation.js';
 
-export const dashboardRoutes = Router();
+const router = Router();
 
-dashboardRoutes.get('/', (req, res) => {
-  res.json(dashboard.get(req.userId, parse(dashboardQuerySchema, req.query)));
+router.get('/', async (req, res) => {
+  res.json(await getDashboard(req.userId, parse(dashboardQuery, req.query)));
 });
+
+export default router;

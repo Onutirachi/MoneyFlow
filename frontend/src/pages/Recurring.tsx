@@ -20,8 +20,7 @@ import { formatBRL, formatMonthShort } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { RecurringCost } from '@/types';
 
-const toInput = ({ id: _id, materializedMonths: _m, createdAt: _c, ...input }: RecurringCost) =>
-  input;
+const toInput = ({ id: _id, materializedMonths: _m, ...input }: RecurringCost) => input;
 
 export function RecurringPage() {
   const { data: items, isLoading } = useRecurring();

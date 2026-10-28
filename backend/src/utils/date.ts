@@ -1,15 +1,24 @@
-// Utilitários de data. Datas: 'YYYY-MM-DD'; meses: 'YYYY-MM'. Sem fuso: tudo é data local.
+// Utilitários de data. Datas: 'YYYY-MM-DD'; meses: 'YYYY-MM'. Sem horário: datas de calendário.
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
-export function todayISO(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
+/** Fuso que define "hoje" (saldo, previstos). Fixo para o servidor em UTC não adiantar o dia. */
+const TIME_ZONE = 'America/Sao_Paulo';
+const todayFormat = new Intl.DateTimeFormat('en-CA', {
+  timeZone: TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+export const todayISO = (): string => todayFormat.format(new Date());
 
 export const currentMonth = (): string => todayISO().slice(0, 7);
 
 export const monthOf = (date: string): string => date.slice(0, 7);
+
+/** Primeiro dia do mês, para filtros `date >= início AND date < início do próximo`. */
+export const monthStart = (month: string): string => `${month}-01`;
 
 function parseMonth(month: string): [number, number] {
   const [y, m] = month.split('-').map(Number);

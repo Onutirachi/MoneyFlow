@@ -1,23 +1,24 @@
 import { Router } from 'express';
 import { recurringSchema } from '../schemas/recurring.schema.js';
-import * as recurring from '../services/recurring.service.js';
-import { parse } from '../utils/validation.js';
+import * as service from '../services/recurring.service.js';
+import { idParam, parse } from '../utils/validation.js';
 
-export const recurringRoutes = Router();
+const router = Router();
 
-recurringRoutes.get('/', (req, res) => {
-  res.json(recurring.list(req.userId));
+router.get('/', async (req, res) => {
+  res.json(await service.list(req.userId));
 });
-
-recurringRoutes.post('/', (req, res) => {
-  res.status(201).json(recurring.create(req.userId, parse(recurringSchema, req.body)));
+router.post('/', async (req, res) => {
+  res.status(201).json(await service.create(req.userId, parse(recurringSchema, req.body)));
 });
-
-recurringRoutes.put('/:id', (req, res) => {
-  res.json(recurring.update(req.userId, req.params.id, parse(recurringSchema, req.body)));
+router.put('/:id', async (req, res) => {
+  res.json(
+    await service.update(req.userId, idParam(req.params.id), parse(recurringSchema, req.body)),
+  );
 });
-
-recurringRoutes.delete('/:id', (req, res) => {
-  recurring.remove(req.userId, req.params.id);
+router.delete('/:id', async (req, res) => {
+  await service.remove(req.userId, idParam(req.params.id));
   res.status(204).end();
 });
+
+export default router;

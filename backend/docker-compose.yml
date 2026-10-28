@@ -1,0 +1,24 @@
+# Banco de dados do MoneyFlow (PostgreSQL 16)
+# Sobe com:  docker compose up -d
+# Porta 5433 no seu PC (para não conflitar com outro Postgres na 5432)
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: moneyflow-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: moneyflow
+      POSTGRES_PASSWORD: moneyflow
+      POSTGRES_DB: moneyflow
+    ports:
+      - '5433:5432'
+    volumes:
+      - moneyflow-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U moneyflow -d moneyflow']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  moneyflow-data:

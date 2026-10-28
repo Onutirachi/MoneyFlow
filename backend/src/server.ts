@@ -1,17 +1,26 @@
 import { createApp } from './app.js';
 import { config } from './config.js';
+import { migrate } from './db/migrate.js';
+import { pool } from './db/pool.js';
 
-const server = createApp().listen(config.port, () => {
-  console.log(`API mock rodando em http://localhost:${config.port}/api`);
+try {
+  await migrate(); // idempotente: garante que as tabelas existem
+} catch (err) {
+  const host = config.DATABASE_URL.replace(/\/\/[^@]*@/, '//'); // sem a senha
+  console.error(`\nNão foi possível conectar ao PostgreSQL em ${host}.`);
+  console.error('Suba o banco com "docker compose up -d" na pasta backend e tente de novo.\n');
+  console.error(err instanceof Error ? err.message : err);
+  process.exit(1);
+}
+
+const server = createApp().listen(config.PORT, () => {
+  console.log(`API em http://localhost:${config.PORT}/api`);
 });
 
-server.on('error', (err: NodeJS.ErrnoException) => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(
-      `A porta ${config.port} já está em uso por outro processo. ` +
-        'Encerre-o ou use outra porta: PORT=3335 npm run dev (e ajuste VITE_API_URL no frontend).',
-    );
-    process.exit(1);
-  }
-  throw err;
-});
+const shutdown = () => {
+  server.close(() => {
+    void pool.end().then(() => process.exit(0));
+  });
+};
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);

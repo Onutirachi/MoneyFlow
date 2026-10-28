@@ -1,40 +1,24 @@
-// Tipos de domínio. Espelhados em frontend/src/types/index.ts — mantenha os dois em sincronia.
-
 export type MovementType = 'ENTRADA' | 'SAIDA';
 export type PaymentMethod = 'DINHEIRO' | 'PIX' | 'CREDITO' | 'DEBITO';
-
-export const MOVEMENT_TYPES = ['ENTRADA', 'SAIDA'] as const satisfies readonly MovementType[];
-export const PAYMENT_METHODS = [
-  'DINHEIRO',
-  'PIX',
-  'CREDITO',
-  'DEBITO',
-] as const satisfies readonly PaymentMethod[];
 
 export interface User {
   id: string;
   name: string;
   email: string;
-  passwordHash: string;
   createdAt: string;
 }
 
-export type PublicUser = Omit<User, 'passwordHash'>;
-
 export interface Account {
   id: string;
-  userId: string;
   name: string;
   color: string;
-  /** centavos */
   initialBalance: number;
   methods: PaymentMethod[];
-  createdAt: string;
+  balance: number;
 }
 
 export interface Category {
   id: string;
-  userId: string;
   name: string;
   type: MovementType;
   color: string;
@@ -42,12 +26,9 @@ export interface Category {
 
 export interface Movement {
   id: string;
-  userId: string;
   type: MovementType;
   description: string;
-  /** centavos, sempre > 0 */
   amount: number;
-  /** YYYY-MM-DD */
   date: string;
   accountId: string;
   method: PaymentMethod;
@@ -61,29 +42,42 @@ export interface Movement {
 
 export interface RecurringCost {
   id: string;
-  userId: string;
   description: string;
   amount: number;
   type: MovementType;
   accountId: string;
   method: PaymentMethod;
   categoryId: string;
-  /** 1–31; dia inexistente no mês usa o último dia */
   dayOfMonth: number;
-  /** YYYY-MM */
   startMonth: string;
-  /** YYYY-MM ou null (sem fim) */
   endMonth: string | null;
   active: boolean;
-  /** meses (YYYY-MM) já gerados como movimentos — ver ADR 0004 */
   materializedMonths: string[];
-  createdAt: string;
 }
 
-export interface Database {
-  users: User[];
-  accounts: Account[];
-  categories: Category[];
-  movements: Movement[];
-  recurring: RecurringCost[];
+interface Totals {
+  income: number;
+  expense: number;
+  result: number;
+}
+
+export interface Dashboard {
+  month: string;
+  summary: {
+    income: number;
+    expense: number;
+    result: number;
+    previous: Totals;
+    variation: { income: number | null; expense: number | null; result: number | null };
+  };
+  totalBalance: number;
+  accounts: { id: string; name: string; color: string; balance: number }[];
+  expenseByCategory: { categoryId: string; name: string; color: string; total: number }[];
+  incomeByCategory: { categoryId: string; name: string; color: string; total: number }[];
+  expenseByAccount: { accountId: string; name: string; color: string; total: number }[];
+  expenseByMethod: { method: PaymentMethod; total: number }[];
+  history: ({ month: string } & Totals)[];
+  upcoming: { month: string; installments: number; recurring: number; other: number }[];
+  upcomingTotal: number;
+  composition: { installments: number; recurring: number; other: number };
 }

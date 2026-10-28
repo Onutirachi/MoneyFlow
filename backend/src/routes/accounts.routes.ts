@@ -1,23 +1,24 @@
 import { Router } from 'express';
-import { accountSchema } from '../schemas/account.schema.js';
-import * as accounts from '../services/accounts.service.js';
-import { parse } from '../utils/validation.js';
+import { accountSchema } from '../schemas/accounts.schema.js';
+import * as service from '../services/accounts.service.js';
+import { idParam, parse } from '../utils/validation.js';
 
-export const accountsRoutes = Router();
+const router = Router();
 
-accountsRoutes.get('/', (req, res) => {
-  res.json(accounts.list(req.userId));
+router.get('/', async (req, res) => {
+  res.json(await service.list(req.userId));
 });
-
-accountsRoutes.post('/', (req, res) => {
-  res.status(201).json(accounts.create(req.userId, parse(accountSchema, req.body)));
+router.post('/', async (req, res) => {
+  res.status(201).json(await service.create(req.userId, parse(accountSchema, req.body)));
 });
-
-accountsRoutes.put('/:id', (req, res) => {
-  res.json(accounts.update(req.userId, req.params.id, parse(accountSchema, req.body)));
+router.put('/:id', async (req, res) => {
+  res.json(
+    await service.update(req.userId, idParam(req.params.id), parse(accountSchema, req.body)),
+  );
 });
-
-accountsRoutes.delete('/:id', (req, res) => {
-  accounts.remove(req.userId, req.params.id);
+router.delete('/:id', async (req, res) => {
+  await service.remove(req.userId, idParam(req.params.id));
   res.status(204).end();
 });
+
+export default router;

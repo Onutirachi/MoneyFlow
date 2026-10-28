@@ -7,7 +7,7 @@ Sistema de gerenciamento financeiro pessoal (TCC). Dois projetos independentes:
 
 | Pasta | Stack | Papel |
 |---|---|---|
-| `backend/` | Node + Express + TypeScript | API **mock** (persistência em `backend/data/db.json`). Será substituída por um backend real mantendo o contrato de `docs/api.md`. |
+| `backend/` | Node + Express + TypeScript + PostgreSQL (`pg`) | API real (ADR 0008). Implementa o contrato de `docs/api.md`. |
 | `frontend/` | Vite + React + TypeScript, Tailwind, shadcn/ui, Recharts, TanStack Query | Aplicação web |
 
 Padrões específicos: [backend/CLAUDE.md](backend/CLAUDE.md) e [frontend/CLAUDE.md](frontend/CLAUDE.md).
@@ -15,8 +15,8 @@ Padrões específicos: [backend/CLAUDE.md](backend/CLAUDE.md) e [frontend/CLAUDE
 ## Comandos
 Atalho: `iniciar.cmd` na raiz (Windows) sobe tudo em duas janelas e abre o navegador.
 ```bash
-# backend (porta 3334)
-cd backend && npm install && npm run seed && npm run dev
+# backend (porta 3334) — requer Docker para o PostgreSQL (porta 5433)
+cd backend && docker compose up -d && npm install && npm run seed && npm run dev
 # frontend (porta 5174)
 cd frontend && npm install && npm run dev
 # qualidade (rodar nos dois projetos)

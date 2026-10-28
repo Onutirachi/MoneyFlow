@@ -1,6 +1,7 @@
-// Popula data/db.json com dados de demonstração relativos ao mês atual.
-// Uso: npm run seed  |  npm run reset (banco vazio)
-import { db, emptyDatabase } from './db/jsonDb.js';
+// Apaga TODOS os dados e cria o usuário de demonstração, relativo ao mês atual.
+// Uso: npm run seed  |  npm run reset (banco vazio)  |  npm run seed -- --if-empty (só se não houver usuários)
+import { migrate } from './db/migrate.js';
+import { execute, pool, query } from './db/pool.js';
 import * as accounts from './services/accounts.service.js';
 import * as auth from './services/auth.service.js';
 import * as categories from './services/categories.service.js';
@@ -9,39 +10,54 @@ import * as recurring from './services/recurring.service.js';
 import type { MovementType, PaymentMethod } from './types.js';
 import { addMonths, currentMonth, dateInMonth, todayISO } from './utils/date.js';
 
-db.replace(emptyDatabase());
+await migrate();
+
+if (process.argv.includes('--if-empty')) {
+  const [{ users }] = (await query<{ users: number }>(
+    'SELECT count(*)::int AS users FROM users',
+  )) as [{ users: number }];
+  if (users > 0) {
+    console.log('Banco já tem dados; seed ignorado.');
+    await pool.end();
+    process.exit(0);
+  }
+}
+
+await execute('TRUNCATE users CASCADE'); // cascata: contas, categorias, movimentos, custos fixos
 
 if (process.argv.includes('--empty')) {
   console.log('Banco resetado (vazio).');
+  await pool.end();
   process.exit(0);
 }
 
-const { user } = auth.register({
+const { user } = await auth.register({
   name: 'Usuário Demo',
   email: 'demo@demo.com',
   password: '123456',
 });
 const userId = user.id;
 
+const userCategories = await categories.list(userId);
 const categoryId = (name: string) => {
-  const category = categories.list(userId).find((c) => c.name === name);
+  const category = userCategories.find((c) => c.name === name);
   if (!category) throw new Error(`Categoria ${name} não existe`);
   return category.id;
 };
 
-const wallet = accounts.create(userId, {
+const wallet = await accounts.create(userId, {
   name: 'Carteira Física',
   color: '#16a34a',
   initialBalance: 180000,
   methods: ['DINHEIRO'],
 });
-const xpto = accounts.create(userId, {
+const xpto = await accounts.create(userId, {
   name: 'Banco XPTO',
   color: '#2563eb',
   initialBalance: 250000,
   methods: ['PIX', 'CREDITO', 'DEBITO'],
 });
-const digital = accounts.create(userId, {
+const digital = await accounts.create(userId, {
   name: 'Banco Digital',
   color: '#9333ea',
   initialBalance: 350000,
@@ -61,7 +77,7 @@ const fixed: [string, number, MovementType, string, PaymentMethod, string, numbe
   ['Academia', 9990, 'SAIDA', digital.id, 'CREDITO', 'Saúde', 8],
 ];
 for (const [description, amount, type, accountId, method, category, dayOfMonth] of fixed) {
-  recurring.create(userId, {
+  await recurring.create(userId, {
     description,
     amount,
     type,
@@ -76,7 +92,7 @@ for (const [description, amount, type, accountId, method, category, dayOfMonth] 
 }
 
 // ---- parcelados ----
-movements.create(userId, {
+await movements.create(userId, {
   type: 'SAIDA',
   description: 'Notebook',
   amount: 480000,
@@ -86,7 +102,7 @@ movements.create(userId, {
   categoryId: categoryId('Compras'),
   installments: 12,
 });
-movements.create(userId, {
+await movements.create(userId, {
   type: 'SAIDA',
   description: 'Geladeira',
   amount: 300000,
@@ -126,7 +142,7 @@ for (let i = 0; i <= 6; i++) {
     for (let t = 0; t < times; t++) {
       const date = dateInMonth(m, between(1, 28));
       if (date > today) continue;
-      movements.create(userId, {
+      await movements.create(userId, {
         type: 'SAIDA',
         description,
         amount: Math.round(between(min, max) * factor),
@@ -141,7 +157,7 @@ for (let i = 0; i <= 6; i++) {
   if (i % 2 === 0) {
     const date = dateInMonth(m, 22);
     if (date <= today) {
-      movements.create(userId, {
+      await movements.create(userId, {
         type: 'ENTRADA',
         description: 'Freelance',
         amount: between(60000, 150000),
@@ -154,7 +170,11 @@ for (let i = 0; i <= 6; i++) {
   }
 }
 
-recurring.ensureMaterialized(userId, addMonths(month, 3));
+await recurring.ensureMaterialized(userId, addMonths(month, 3));
 
-const total = db.data.movements.length;
+const [{ total }] = (await query<{ total: number }>(
+  'SELECT count(*)::int AS total FROM movements WHERE user_id = $1',
+  [userId],
+)) as [{ total: number }];
 console.log(`Seed concluído: ${total} movimentos. Login: demo@demo.com / 123456`);
+await pool.end();

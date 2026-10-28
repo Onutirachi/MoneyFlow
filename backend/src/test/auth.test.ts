@@ -1,6 +1,7 @@
 import './setup.js';
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
+import { pool } from '../db/pool.js';
 import { startTestApi, type TestApi } from './helpers.js';
 
 describe('auth', () => {
@@ -69,5 +70,20 @@ describe('auth', () => {
     });
     assert.equal(res.status, 200);
     assert.ok(res.body.token);
+  });
+
+  it('token de usuário que não existe mais (ex.: após o seed) responde 401', async () => {
+    const reg = await api.request<{ token: string; user: { id: string } }>(
+      'POST',
+      '/auth/register',
+      { body: { name: 'Caio', email: 'caio@test.com', password: '123456' } },
+    );
+    await pool.query('DELETE FROM users WHERE id = $1', [reg.body.user.id]);
+    const create = await api.request<{ error: { code: string } }>('POST', '/accounts', {
+      token: reg.body.token,
+      body: { name: 'X', color: '#2563eb', initialBalance: 0, methods: ['PIX'] },
+    });
+    assert.equal(create.status, 401); // e não 500 por violar a chave estrangeira
+    assert.equal(create.body.error.code, 'UNAUTHORIZED');
   });
 });

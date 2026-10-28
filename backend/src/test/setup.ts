@@ -1,8 +1,4 @@
-// Importar PRIMEIRO em todo teste: aponta o banco para um arquivo temporário.
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
-
-const dbPath = path.join(os.tmpdir(), `financas-test-${process.pid}-${Date.now()}.json`);
-process.env.DB_PATH = dbPath;
-process.on('exit', () => fs.rmSync(dbPath, { force: true }));
+// Importar PRIMEIRO em todo teste: aponta a API para o banco de testes (nunca o de desenvolvimento).
+// Criação do banco e migração acontecem em startTestApi() (helpers.ts).
+process.env.DATABASE_URL =
+  process.env.TEST_DATABASE_URL ?? 'postgres://moneyflow:moneyflow@localhost:5433/moneyflow_test';

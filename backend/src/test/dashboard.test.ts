@@ -130,6 +130,30 @@ describe('dashboard', () => {
     assert.equal(body.upcomingTotal, 50000);
   });
 
+  it('compromissos incluem saídas avulsas já lançadas para os próximos meses', async () => {
+    const [account] = (await api.request<{ id: string }[]>('GET', '/accounts', { token })).body;
+    const cats = await api.request<{ id: string; name: string }[]>('GET', '/categories', { token });
+    await api.request('POST', '/movements', {
+      token,
+      body: {
+        type: 'SAIDA',
+        description: 'Viagem',
+        amount: 7000,
+        date: '2030-11-20',
+        accountId: account!.id,
+        method: 'PIX',
+        categoryId: cats.body.find((c) => c.name === 'Lazer')!.id,
+      },
+    });
+    const { body } = await api.request<DashboardRes>('GET', '/dashboard?month=2030-09', {
+      token,
+    });
+    assert.equal(body.upcoming[1]!.other, 7000);
+    const sum = body.upcoming.reduce((a, u) => a + u.installments + u.recurring + u.other, 0);
+    assert.equal(body.upcomingTotal, sum); // o total bate com as barras do card
+    assert.equal(body.upcomingTotal, 57000);
+  });
+
   it('exige mês válido', async () => {
     const res = await api.request('GET', '/dashboard?month=2030-13', { token });
     assert.equal(res.status, 400);

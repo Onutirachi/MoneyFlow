@@ -30,6 +30,7 @@
 ## Saldo
 - Saldo da conta = `initialBalance + Σ entradas − Σ saídas` com `date <= hoje`.
 - Saldo total = soma dos saldos das contas.
+- **Hoje** é a data no fuso `America/Sao_Paulo`, mesmo que o servidor rode em UTC. É essa data que define o saldo e o que é previsto.
 
 ## Dashboard / comparação mensal
 - Resultado do mês = entradas − saídas (inclui previstos do mês).

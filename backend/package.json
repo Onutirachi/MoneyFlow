@@ -10,15 +10,17 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "migrate": "tsx src/db/migrate.ts",
     "seed": "tsx src/seed.ts",
     "reset": "tsx src/seed.ts --empty",
-    "test": "tsx --test \"src/**/*.test.ts\""
+    "test": "tsx --test --test-concurrency=1 \"src/**/*.test.ts\""
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -27,6 +29,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.6.2",
+    "@types/pg": "^8.23.1",
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.12.0",

@@ -16,19 +16,21 @@ Sistema de gerenciamento financeiro pessoal (TCC).
 ## Projetos
 | Pasta | Stack |
 |---|---|
-| [`backend/`](backend/) | API **mock** em Node + Express 5 + TypeScript (dados em `backend/data/db.json`) |
+| [`backend/`](backend/) | API em Node + Express 5 + TypeScript com **PostgreSQL** (`pg`) |
 | [`frontend/`](frontend/) | Vite + React 19 + TypeScript, Tailwind v4, shadcn/ui, Recharts, TanStack Query |
 
 ## Como rodar
-Requisitos: Node 20 ou superior.
+Requisitos: Node 20.12 ou superior e [Docker Desktop](https://www.docker.com/products/docker-desktop/) aberto (é ele que roda o PostgreSQL).
 
-**Jeito mais fácil:** dois cliques em **`iniciar.cmd`**. Ele instala as dependências e cria os dados de demonstração se faltarem, abre as janelas do backend e do frontend e o navegador em http://localhost:5174. Para parar, feche as duas janelas.
+**Jeito mais fácil:** dois cliques em **`iniciar.cmd`**. Ele sobe o banco no Docker, instala as dependências, cria os dados de demonstração na primeira vez, abre as janelas do backend e do frontend e o navegador em http://localhost:5174. Para parar, feche as duas janelas. O banco continua rodando no Docker; para desligar, rode `docker compose stop` na pasta `backend`.
 
 Manualmente:
 
 ```bash
 # terminal 1
 cd backend
+cp .env.example .env
+docker compose up -d   # PostgreSQL na porta 5433
 npm install
 npm run seed      # dados de demonstração (npm run reset = banco vazio)
 npm run dev       # http://localhost:3334/api
@@ -44,20 +46,20 @@ Login de demonstração: **demo@demo.com** / **123456**
 > O frontend chama a API em `/api` no próprio endereço (5174), e o Vite repassa ao backend (proxy em `vite.config.ts`). Por isso não há problema de CORS nem de porta. As portas são 3334/5174 porque 3333/5173 já estão em uso por outro projeto nesta máquina. Para trocar o backend de porta: `PORT=xxxx npm run dev` e `API_TARGET=http://127.0.0.1:xxxx npm run dev` no frontend.
 
 ### O que é o seed?
-`npm run seed` (no backend) **apaga** `backend/data/db.json` e o recria com um usuário de demonstração (**demo@demo.com / 123456**): 3 contas, custos fixos, compras parceladas e cerca de 7 meses de gastos, para o dashboard já ter gráficos. Use para demonstrar ou para voltar ao estado inicial. `npm run reset` deixa o banco vazio. Não precisa rodar toda vez: os dados ficam salvos no arquivo entre execuções.
+`npm run seed` (no backend) **apaga todos os dados do banco** e cria um usuário de demonstração (**demo@demo.com / 123456**): 3 contas, custos fixos, compras parceladas e cerca de 7 meses de gastos, para o dashboard já ter gráficos. Use para demonstrar ou para voltar ao estado inicial. `npm run reset` deixa o banco vazio. Não precisa rodar toda vez: os dados ficam salvos no volume do Docker entre execuções.
 
 ## Qualidade
 ```bash
 # em cada projeto
 npm run typecheck && npm run lint && npm run build
 # backend
-npm test          # 22 testes de integração
+npm test          # 24 testes de integração (usa o banco moneyflow_test no mesmo Postgres)
 ```
 
 ## Documentação
 Tudo está em [`docs/`](docs/README.md):
 - [Especificação](docs/especificacao.md): requisitos funcionais e não funcionais
-- [ROADMAP](docs/ROADMAP.md): as 14 etapas e o que cada uma entregou
+- [ROADMAP](docs/ROADMAP.md): as etapas e o que cada uma entregou
 - [Diário de etapas](docs/etapas/): o que foi feito e como testar
 - [Contrato da API](docs/api.md) e [regras de negócio](docs/regras-de-negocio.md)
 - [Decisões de arquitetura (ADRs)](docs/adr/README.md)

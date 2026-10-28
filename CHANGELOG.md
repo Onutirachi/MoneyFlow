@@ -103,3 +103,17 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Aviso "O backend não está respondendo" nas telas de login e cadastro, e mensagem clara quando a API está fora do ar.
 - `iniciar.cmd`: sobe backend e frontend em duas janelas e abre o navegador (instala dependências e cria o seed se faltarem).
 - README explica o que é o seed.
+
+## [Etapa 15] — 2026-10-28
+### Adicionado
+- Backend real com **PostgreSQL** (driver `pg`), a partir do código do Matheus: esquema com chaves estrangeiras e `CHECK`s, transações e trava na geração de custos fixos (ADR 0008, substitui a 0001).
+- `backend/docker-compose.yml` (Postgres 16 na porta 5433), `npm run migrate` e `npm run seed -- --if-empty`.
+- 2 testes de regressão (24 no total), agora rodando contra o banco `moneyflow_test`.
+- `docs/especificacao.md`: requisitos funcionais e não funcionais, telas, comportamentos de borda e rastreabilidade com os testes.
+### Alterado
+- `iniciar.cmd` verifica o Docker, sobe o banco e só roda o seed na primeira vez.
+- "Hoje" (saldo e previstos) calculado no fuso `America/Sao_Paulo`, independente do fuso do servidor.
+- Tipos `Account` e `RecurringCost` do frontend sem `createdAt`, alinhados ao `api.md`.
+### Corrigido
+- Em relação ao código original do Postgres: a edição de parcelas em grupo duplicava o sufixo `i/n`; um token de usuário apagado gerava 500 em vez de 401; `upcomingTotal` ignorava os avulsos; valem de novo as categorias padrão, os limites de validação e as ordenações do mock.
+- `regras-de-negocio.md`: compromissos futuros incluem as saídas avulsas.

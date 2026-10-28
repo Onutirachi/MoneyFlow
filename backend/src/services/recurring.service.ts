@@ -1,120 +1,216 @@
-import { randomUUID } from 'node:crypto';
-import { db } from '../db/jsonDb.js';
+import type { PoolClient } from 'pg';
 import { notFound } from '../errors.js';
-import type { RecurringInput } from '../schemas/recurring.schema.js';
-import type { Movement, RecurringCost } from '../types.js';
+import { execute, must, one, query, withTx, type Db } from '../db/pool.js';
+import { insertMovement } from '../db/movements.js';
 import { dateInMonth, monthRange, todayISO } from '../utils/date.js';
-import { validateRefs } from './refs.js';
+import { assertRefs } from './refs.js';
+import type { MovementType, PaymentMethod, RecurringCost } from '../types.js';
 
-export type PublicRecurring = Omit<RecurringCost, 'userId'>;
+type RecurringRow = {
+  id: string;
+  description: string;
+  amount: number;
+  type: MovementType;
+  account_id: string;
+  method: PaymentMethod;
+  category_id: string;
+  day_of_month: number;
+  start_month: string;
+  end_month: string | null;
+  active: boolean;
+  materialized_months: string[];
+};
 
-function present(recurring: RecurringCost): PublicRecurring {
-  const { userId: _userId, ...rest } = recurring;
-  return rest;
-}
+const COLS =
+  'id, description, amount, type, account_id, method, category_id, day_of_month, start_month, end_month, active, materialized_months';
 
-function getOwnedRecurring(userId: string, id: string): RecurringCost {
-  const recurring = db.data.recurring.find((r) => r.id === id && r.userId === userId);
-  if (!recurring) throw notFound('Custo fixo');
-  return recurring;
-}
+const toRecurring = (r: RecurringRow): RecurringCost => ({
+  id: r.id,
+  description: r.description,
+  amount: r.amount,
+  type: r.type,
+  accountId: r.account_id,
+  method: r.method,
+  categoryId: r.category_id,
+  dayOfMonth: r.day_of_month,
+  startMonth: r.start_month,
+  endMonth: r.end_month,
+  active: r.active,
+  materializedMonths: r.materialized_months,
+});
 
 /**
- * Gera os movimentos de cada custo fixo ativo do usuário, do `startMonth` até `untilMonth`
- * (limitado por `endMonth`). Idempotente: meses em `materializedMonths` nunca são gerados
- * de novo, nem se a ocorrência tiver sido excluída (ADR 0004).
+ * Materialização preguiçosa e idempotente: gera os movimentos reais dos custos fixos
+ * ativos, de start_month até `targetMonth`, pulando meses já em materialized_months.
  */
-export function ensureMaterialized(userId: string, untilMonth: string): void {
-  const { data } = db;
-  const createdAt = new Date().toISOString();
-  let changed = false;
-
-  for (const r of data.recurring) {
-    if (r.userId !== userId || !r.active) continue;
-    const last = r.endMonth && r.endMonth < untilMonth ? r.endMonth : untilMonth;
-    if (last < r.startMonth) continue;
-
-    const done = new Set(r.materializedMonths);
-    for (const month of monthRange(r.startMonth, last)) {
-      if (done.has(month)) continue;
-      const movement: Movement = {
-        id: randomUUID(),
+export async function materialize(
+  userId: string,
+  targetMonth: string,
+  db: PoolClient,
+  recurringId?: string,
+): Promise<void> {
+  const rows = await query<RecurringRow>(
+    `SELECT ${COLS} FROM recurring_costs
+      WHERE user_id = $1 AND active AND start_month <= $2
+        AND ($3::uuid IS NULL OR id = $3)
+      ORDER BY id
+      FOR UPDATE`,
+    [userId, targetMonth, recurringId ?? null],
+    db,
+  );
+  for (const r of rows) {
+    const last = r.end_month !== null && r.end_month < targetMonth ? r.end_month : targetMonth;
+    const done = new Set(r.materialized_months);
+    const pending = monthRange(r.start_month, last).filter((m) => !done.has(m));
+    if (pending.length === 0) continue;
+    for (const month of pending) {
+      await insertMovement(db, {
         userId,
         type: r.type,
         description: r.description,
         amount: r.amount,
-        date: dateInMonth(month, r.dayOfMonth),
-        accountId: r.accountId,
+        date: dateInMonth(month, r.day_of_month),
+        accountId: r.account_id,
         method: r.method,
-        categoryId: r.categoryId,
-        installmentGroupId: null,
-        installmentNumber: null,
-        installmentTotal: null,
+        categoryId: r.category_id,
         recurringId: r.id,
-        createdAt,
-      };
-      data.movements.push(movement);
-      r.materializedMonths.push(month);
-      changed = true;
+      });
     }
+    await execute(
+      'UPDATE recurring_costs SET materialized_months = $2 WHERE id = $1',
+      [r.id, [...r.materialized_months, ...pending].sort()],
+      db,
+    );
   }
-
-  if (changed) db.save();
 }
 
-export function list(userId: string): PublicRecurring[] {
-  return db.data.recurring
-    .filter((r) => r.userId === userId)
-    .sort((a, b) => a.dayOfMonth - b.dayOfMonth || a.description.localeCompare(b.description))
-    .map(present);
+export async function ensureMaterialized(userId: string, targetMonth: string): Promise<void> {
+  await withTx((c) => materialize(userId, targetMonth, c));
 }
 
-export function create(userId: string, input: RecurringInput): PublicRecurring {
-  validateRefs(userId, input);
-  const recurring: RecurringCost = {
-    id: randomUUID(),
-    userId,
-    ...input,
-    materializedMonths: [],
-    createdAt: new Date().toISOString(),
-  };
-  db.data.recurring.push(recurring);
-  db.save();
-  return present(recurring);
-}
-
-/**
- * Descarta as ocorrências futuras (data > hoje) já geradas, liberando esses meses para serem
- * regenerados com os dados atuais. Passado e hoje ficam intactos (ADR 0006).
- */
-function dropFutureOccurrences(recurring: RecurringCost, today = todayISO()): void {
-  const { data } = db;
-  data.movements = data.movements.filter(
-    (m) => !(m.recurringId === recurring.id && m.date > today),
+export async function list(userId: string): Promise<RecurringCost[]> {
+  const rows = await query<RecurringRow>(
+    `SELECT ${COLS} FROM recurring_costs WHERE user_id = $1 ORDER BY day_of_month, description`,
+    [userId],
   );
-  recurring.materializedMonths = recurring.materializedMonths.filter(
-    (month) => dateInMonth(month, recurring.dayOfMonth) <= today,
+  return rows.map(toRecurring);
+}
+
+export interface RecurringInput {
+  description: string;
+  amount: number;
+  type: MovementType;
+  accountId: string;
+  method: PaymentMethod;
+  categoryId: string;
+  dayOfMonth: number;
+  startMonth: string;
+  endMonth: string | null;
+  active: boolean;
+}
+
+export async function create(userId: string, input: RecurringInput): Promise<RecurringCost> {
+  await assertRefs(userId, input);
+  const row = must(
+    await query<RecurringRow>(
+      `INSERT INTO recurring_costs
+         (user_id, description, amount, type, account_id, method, category_id,
+          day_of_month, start_month, end_month, active)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+       RETURNING ${COLS}`,
+      [
+        userId,
+        input.description,
+        input.amount,
+        input.type,
+        input.accountId,
+        input.method,
+        input.categoryId,
+        input.dayOfMonth,
+        input.startMonth,
+        input.endMonth,
+        input.active,
+      ],
+    ),
   );
+  return toRecurring(row);
 }
 
-/** Edição vale para o futuro: ocorrências futuras são regeneradas; as passadas ficam como estão. */
-export function update(userId: string, id: string, input: RecurringInput): PublicRecurring {
-  const recurring = getOwnedRecurring(userId, id);
-  validateRefs(userId, input);
-  dropFutureOccurrences(recurring);
-  Object.assign(recurring, input);
-  db.save();
-  return present(recurring);
+async function lockOwn(db: Db, userId: string, id: string): Promise<RecurringRow> {
+  const row = one(
+    await query<RecurringRow>(
+      `SELECT ${COLS} FROM recurring_costs WHERE id = $1 AND user_id = $2 FOR UPDATE`,
+      [id, userId],
+      db,
+    ),
+  );
+  if (!row) throw notFound('Custo fixo não encontrado');
+  return row;
 }
 
-/** Exclui o custo fixo: ocorrências futuras somem; as passadas permanecem, desvinculadas. */
-export function remove(userId: string, id: string): void {
-  const recurring = getOwnedRecurring(userId, id);
-  dropFutureOccurrences(recurring);
-  const { data } = db;
-  for (const m of data.movements) {
-    if (m.recurringId === id) m.recurringId = null;
-  }
-  data.recurring = data.recurring.filter((r) => r !== recurring);
-  db.save();
+/** Edição vale daqui pra frente: descarta ocorrências futuras e regenera se continuar ativo. */
+export async function update(
+  userId: string,
+  id: string,
+  input: RecurringInput,
+): Promise<RecurringCost> {
+  await assertRefs(userId, input);
+  return withTx(async (c) => {
+    const current = await lockOwn(c, userId, id);
+    const today = todayISO();
+
+    // ADR 0006: ocorrências futuras saem e seus meses são liberados para regenerar;
+    // meses com data até hoje continuam marcados (mesmo se a ocorrência foi excluída à mão).
+    await execute(
+      'DELETE FROM movements WHERE recurring_id = $1 AND date > $2::date',
+      [id, today],
+      c,
+    );
+    const stillDone = current.materialized_months.filter(
+      (month) => dateInMonth(month, current.day_of_month) <= today,
+    );
+
+    await execute(
+      `UPDATE recurring_costs
+          SET description = $2, amount = $3, type = $4, account_id = $5, method = $6,
+              category_id = $7, day_of_month = $8, start_month = $9, end_month = $10,
+              active = $11, materialized_months = $12
+        WHERE id = $1`,
+      [
+        id,
+        input.description,
+        input.amount,
+        input.type,
+        input.accountId,
+        input.method,
+        input.categoryId,
+        input.dayOfMonth,
+        input.startMonth,
+        input.endMonth,
+        input.active,
+        stillDone,
+      ],
+      c,
+    );
+
+    const farthest = [...current.materialized_months].sort().at(-1);
+    if (input.active && farthest) await materialize(userId, farthest, c, id);
+
+    return toRecurring(
+      must(await query<RecurringRow>(`SELECT ${COLS} FROM recurring_costs WHERE id = $1`, [id], c)),
+    );
+  });
+}
+
+export async function remove(userId: string, id: string): Promise<void> {
+  await withTx(async (c) => {
+    await lockOwn(c, userId, id);
+    await execute(
+      'DELETE FROM movements WHERE recurring_id = $1 AND date > $2::date',
+      [id, todayISO()],
+      c,
+    );
+    // as ocorrências passadas ficam com recurring_id = NULL (ON DELETE SET NULL)
+    await execute('DELETE FROM recurring_costs WHERE id = $1', [id], c);
+  });
 }

@@ -18,7 +18,8 @@ Legenda: ⬜ pendente · 🔄 em andamento · ✅ concluída
 | 12 | Frontend: custos fixos | ✅ | [12-frontend-custos-fixos](etapas/12-frontend-custos-fixos.md) |
 | 13 | Frontend: dashboard e gráficos | ✅ | [13-frontend-dashboard](etapas/13-frontend-dashboard.md) |
 | 14 | Revisão final e verificação end-to-end | ✅ | [14-revisao-final](etapas/14-revisao-final.md) |
-| 15 | Backend: bordas dos custos fixos (limite de materialização, `startMonth` retroativo, método removido da conta) — ver [especificação §7](especificacao.md#7-comportamentos-de-borda-conhecidos) | ⬜ | — |
+| 15 | Backend real com PostgreSQL (substitui o mock) | ✅ | [15-backend-postgres](etapas/15-backend-postgres.md) |
+| 16 | Backend: bordas dos custos fixos (limite de materialização, `startMonth` retroativo, método removido da conta) — ver [especificação §7](especificacao.md#7-comportamentos-de-borda-conhecidos) | ⬜ | — |
 
 ## Ideias futuras (fora do escopo atual)
 - Fatura de cartão de crédito (dia de fechamento/vencimento por conta).

@@ -1,28 +1,20 @@
 import { z } from 'zod';
-import {
-  amountSchema,
-  idSchema,
-  monthSchema,
-  movementTypeSchema,
-  paymentMethodSchema,
-} from './common.schema.js';
+import { cents, monthSchema, movementType, paymentMethod, text, uuid } from './common.js';
 
 export const recurringSchema = z
   .object({
-    description: z.string().trim().min(1).max(100),
-    amount: amountSchema,
-    type: movementTypeSchema,
-    accountId: idSchema,
-    method: paymentMethodSchema,
-    categoryId: idSchema,
-    dayOfMonth: z.number().int().min(1).max(31),
+    description: text(100),
+    amount: cents,
+    type: movementType,
+    accountId: uuid,
+    method: paymentMethod,
+    categoryId: uuid,
+    dayOfMonth: z.number().int().min(1, 'Dia de 1 a 31').max(31, 'Dia de 1 a 31'),
     startMonth: monthSchema,
-    endMonth: monthSchema.nullable().default(null),
+    endMonth: monthSchema.nullish().transform((v) => v ?? null),
     active: z.boolean().default(true),
   })
-  .refine((r) => !r.endMonth || r.endMonth >= r.startMonth, {
-    message: 'Mês final deve ser igual ou posterior ao mês inicial',
+  .refine((v) => v.endMonth === null || v.endMonth >= v.startMonth, {
+    message: 'O mês final não pode ser anterior ao inicial',
     path: ['endMonth'],
   });
-
-export type RecurringInput = z.infer<typeof recurringSchema>;

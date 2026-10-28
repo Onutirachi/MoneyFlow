@@ -1,32 +1,36 @@
 import { Router } from 'express';
 import {
   createMovementSchema,
-  listMovementsQuerySchema,
-  scopeQuerySchema,
+  listMovementsQuery,
+  scopeQuery,
   updateMovementSchema,
-} from '../schemas/movement.schema.js';
-import * as movements from '../services/movements.service.js';
-import { parse } from '../utils/validation.js';
+} from '../schemas/movements.schema.js';
+import * as service from '../services/movements.service.js';
+import { idParam, parse } from '../utils/validation.js';
 
-export const movementsRoutes = Router();
+const router = Router();
 
-movementsRoutes.get('/', (req, res) => {
-  res.json(movements.list(req.userId, parse(listMovementsQuerySchema, req.query)));
+router.get('/', async (req, res) => {
+  res.json(await service.list(req.userId, parse(listMovementsQuery, req.query)));
 });
-
-movementsRoutes.post('/', (req, res) => {
-  res.status(201).json(movements.create(req.userId, parse(createMovementSchema, req.body)));
+router.post('/', async (req, res) => {
+  res.status(201).json(await service.create(req.userId, parse(createMovementSchema, req.body)));
 });
-
-movementsRoutes.put('/:id', (req, res) => {
-  const { scope } = parse(scopeQuerySchema, req.query);
+router.put('/:id', async (req, res) => {
+  const { scope } = parse(scopeQuery, req.query);
   res.json(
-    movements.update(req.userId, req.params.id, parse(updateMovementSchema, req.body), scope),
+    await service.update(
+      req.userId,
+      idParam(req.params.id),
+      scope,
+      parse(updateMovementSchema, req.body),
+    ),
   );
 });
-
-movementsRoutes.delete('/:id', (req, res) => {
-  const { scope } = parse(scopeQuerySchema, req.query);
-  movements.remove(req.userId, req.params.id, scope);
+router.delete('/:id', async (req, res) => {
+  const { scope } = parse(scopeQuery, req.query);
+  await service.remove(req.userId, idParam(req.params.id), scope);
   res.status(204).end();
 });
+
+export default router;

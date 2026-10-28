@@ -1,163 +1,126 @@
-import { db } from '../db/jsonDb.js';
-import type { DashboardQuery } from '../schemas/dashboard.schema.js';
-import type { Movement, MovementType, PaymentMethod } from '../types.js';
-import { addMonths, monthOf, monthRange } from '../utils/date.js';
-import { computeBalance, getOwnedAccount } from './accounts.service.js';
+import { query } from '../db/pool.js';
+import { addMonths, monthRange, monthStart } from '../utils/date.js';
 import { ensureMaterialized } from './recurring.service.js';
+import * as accountsService from './accounts.service.js';
+import type { Dashboard, MovementType } from '../types.js';
 
-/** Quantos meses à frente entram em "compromissos futuros". */
-const UPCOMING_MONTHS = 3;
-const HISTORY_MONTHS = 12;
+const pct = (cur: number, prev: number): number | null =>
+  prev === 0 ? null : Math.round(((cur - prev) / Math.abs(prev)) * 1000) / 10;
 
-interface Totals {
-  income: number;
-  expense: number;
-  result: number;
-}
+const ZERO = { income: 0, expense: 0 };
 
-interface Composition {
-  installments: number;
-  recurring: number;
-  other: number;
-}
+type Origin = { month: string; installments: number; recurring: number; other: number };
 
-export interface Dashboard {
-  month: string;
-  summary: Totals & {
-    previous: Totals;
-    variation: { income: number | null; expense: number | null; result: number | null };
-  };
-  totalBalance: number;
-  accounts: { id: string; name: string; color: string; balance: number }[];
-  expenseByCategory: { categoryId: string; name: string; color: string; total: number }[];
-  incomeByCategory: { categoryId: string; name: string; color: string; total: number }[];
-  expenseByAccount: { accountId: string; name: string; color: string; total: number }[];
-  expenseByMethod: { method: PaymentMethod; total: number }[];
-  history: ({ month: string } & Totals)[];
-  upcoming: ({ month: string } & Composition)[];
-  upcomingTotal: number;
-  composition: Composition;
-}
+export async function getDashboard(
+  userId: string,
+  input: { month: string; accountId?: string | undefined },
+): Promise<Dashboard> {
+  const { month } = input;
+  const accountId = input.accountId ?? null;
+  if (accountId) await accountsService.getAccount(userId, accountId); // 404 se não for do usuário
 
-function totalsOf(movements: Movement[]): Totals {
-  let income = 0;
-  let expense = 0;
-  for (const m of movements) {
-    if (m.type === 'ENTRADA') income += m.amount;
-    else expense += m.amount;
-  }
-  return { income, expense, result: income - expense };
-}
+  await ensureMaterialized(userId, addMonths(month, 3));
 
-/** Variação percentual com 1 casa; null quando não há base de comparação. */
-function variation(current: number, previous: number): number | null {
-  if (previous === 0) return null;
-  return Math.round(((current - previous) / Math.abs(previous)) * 1000) / 10;
-}
-
-function compositionOf(expenses: Movement[]): Composition {
-  const c: Composition = { installments: 0, recurring: 0, other: 0 };
-  for (const m of expenses) {
-    if (m.installmentGroupId) c.installments += m.amount;
-    else if (m.recurringId) c.recurring += m.amount;
-    else c.other += m.amount;
-  }
-  return c;
-}
-
-function sumBy<K extends string>(movements: Movement[], key: (m: Movement) => K): Map<K, number> {
-  const map = new Map<K, number>();
-  for (const m of movements) map.set(key(m), (map.get(key(m)) ?? 0) + m.amount);
-  return map;
-}
-
-const byTotalDesc = (a: { total: number }, b: { total: number }) => b.total - a.total;
-
-export function get(userId: string, { month, accountId }: DashboardQuery): Dashboard {
-  if (accountId) getOwnedAccount(userId, accountId);
-  ensureMaterialized(userId, addMonths(month, UPCOMING_MONTHS));
-
-  const { data } = db;
-  const movements = data.movements.filter(
-    (m) => m.userId === userId && (!accountId || m.accountId === accountId),
-  );
-
-  const byMonth = new Map<string, Movement[]>();
-  for (const m of movements) {
-    const key = monthOf(m.date);
-    const bucket = byMonth.get(key);
-    if (bucket) bucket.push(m);
-    else byMonth.set(key, [m]);
-  }
-  const inMonth = (key: string) => byMonth.get(key) ?? [];
-
-  const current = inMonth(month);
-  const expenses = current.filter((m) => m.type === 'SAIDA');
-  const totals = totalsOf(current);
-  const previous = totalsOf(inMonth(addMonths(month, -1)));
-
-  const accounts = data.accounts
-    .filter((a) => a.userId === userId && (!accountId || a.id === accountId))
-    .map((a) => ({ id: a.id, name: a.name, color: a.color, balance: computeBalance(a) }))
-    .sort((a, b) => b.balance - a.balance);
-  const accountById = new Map(data.accounts.map((a) => [a.id, a]));
-  const categoryById = new Map(data.categories.map((c) => [c.id, c]));
+  const from = monthStart(month);
+  const to = monthStart(addMonths(month, 1));
+  const firstHistory = addMonths(month, -11);
+  const filter = `m.user_id = $1 AND ($2::uuid IS NULL OR m.account_id = $2)`;
 
   const byCategory = (type: MovementType) =>
-    [
-      ...sumBy(
-        current.filter((m) => m.type === type),
-        (m) => m.categoryId,
-      ),
-    ]
-      .map(([categoryId, total]) => {
-        const category = categoryById.get(categoryId);
-        return {
-          categoryId,
-          name: category?.name ?? 'Sem categoria',
-          color: category?.color ?? '#64748b',
-          total,
-        };
-      })
-      .sort(byTotalDesc);
+    query<{ categoryId: string; name: string; color: string; total: number }>(
+      `SELECT c.id AS "categoryId", c.name, c.color, SUM(m.amount)::bigint AS total
+         FROM movements m JOIN categories c ON c.id = m.category_id
+        WHERE ${filter} AND m.type = '${type}' AND m.date >= $3::date AND m.date < $4::date
+        GROUP BY c.id ORDER BY total DESC`,
+      [userId, accountId, from, to],
+    );
 
-  const upcoming = monthRange(addMonths(month, 1), addMonths(month, UPCOMING_MONTHS)).map((m) => ({
-    month: m,
-    ...compositionOf(inMonth(m).filter((mv) => mv.type === 'SAIDA')),
-  }));
+  const [
+    accounts,
+    history,
+    expenseByCategory,
+    incomeByCategory,
+    expenseByAccount,
+    expenseByMethod,
+    origin,
+  ] = await Promise.all([
+    accountsService.list(userId),
+    query<{ month: string; income: number; expense: number }>(
+      `SELECT to_char(m.date, 'YYYY-MM') AS month,
+                COALESCE(SUM(m.amount) FILTER (WHERE m.type = 'ENTRADA'), 0)::bigint AS income,
+                COALESCE(SUM(m.amount) FILTER (WHERE m.type = 'SAIDA'), 0)::bigint AS expense
+           FROM movements m
+          WHERE ${filter} AND m.date >= $3::date AND m.date < $4::date
+          GROUP BY 1`,
+      [userId, accountId, monthStart(firstHistory), to],
+    ),
+    byCategory('SAIDA'),
+    byCategory('ENTRADA'),
+    query<{ accountId: string; name: string; color: string; total: number }>(
+      `SELECT a.id AS "accountId", a.name, a.color, SUM(m.amount)::bigint AS total
+           FROM movements m JOIN accounts a ON a.id = m.account_id
+          WHERE ${filter} AND m.type = 'SAIDA' AND m.date >= $3::date AND m.date < $4::date
+          GROUP BY a.id ORDER BY total DESC`,
+      [userId, accountId, from, to],
+    ),
+    query<{ method: Dashboard['expenseByMethod'][number]['method']; total: number }>(
+      `SELECT m.method, SUM(m.amount)::bigint AS total
+           FROM movements m
+          WHERE ${filter} AND m.type = 'SAIDA' AND m.date >= $3::date AND m.date < $4::date
+          GROUP BY m.method ORDER BY total DESC`,
+      [userId, accountId, from, to],
+    ),
+    query<Origin>(
+      `SELECT to_char(m.date, 'YYYY-MM') AS month,
+                COALESCE(SUM(m.amount) FILTER (WHERE m.installment_group_id IS NOT NULL), 0)::bigint AS installments,
+                COALESCE(SUM(m.amount) FILTER (WHERE m.recurring_id IS NOT NULL), 0)::bigint AS recurring,
+                COALESCE(SUM(m.amount) FILTER (WHERE m.installment_group_id IS NULL AND m.recurring_id IS NULL), 0)::bigint AS other
+           FROM movements m
+          WHERE ${filter} AND m.type = 'SAIDA' AND m.date >= $3::date AND m.date < $4::date
+          GROUP BY 1`,
+      [userId, accountId, from, monthStart(addMonths(month, 4))],
+    ),
+  ]);
+
+  const shown = (accountId ? accounts.filter((a) => a.id === accountId) : accounts).sort(
+    (a, b) => b.balance - a.balance,
+  );
+
+  const byMonth = new Map(history.map((r) => [r.month, r]));
+  const hist = monthRange(firstHistory, month).map((m) => {
+    const { income, expense } = byMonth.get(m) ?? ZERO;
+    return { month: m, income, expense, result: income - expense };
+  });
+  const cur = hist[hist.length - 1] ?? { month, ...ZERO, result: 0 };
+  const prev = hist[hist.length - 2] ?? { month, ...ZERO, result: 0 };
+
+  const originOf = (m: string): Origin =>
+    origin.find((o) => o.month === m) ?? { month: m, installments: 0, recurring: 0, other: 0 };
+  const upcoming = [1, 2, 3].map((i) => originOf(addMonths(month, i)));
+  const { installments, recurring, other } = originOf(month);
 
   return {
     month,
     summary: {
-      ...totals,
-      previous,
+      income: cur.income,
+      expense: cur.expense,
+      result: cur.result,
+      previous: { income: prev.income, expense: prev.expense, result: prev.result },
       variation: {
-        income: variation(totals.income, previous.income),
-        expense: variation(totals.expense, previous.expense),
-        result: variation(totals.result, previous.result),
+        income: pct(cur.income, prev.income),
+        expense: pct(cur.expense, prev.expense),
+        result: pct(cur.result, prev.result),
       },
     },
-    totalBalance: accounts.reduce((acc, a) => acc + a.balance, 0),
-    accounts,
-    expenseByCategory: byCategory('SAIDA'),
-    incomeByCategory: byCategory('ENTRADA'),
-    expenseByAccount: [...sumBy(expenses, (m) => m.accountId)]
-      .map(([id, total]) => ({
-        accountId: id,
-        name: accountById.get(id)?.name ?? 'Conta removida',
-        color: accountById.get(id)?.color ?? '#64748b',
-        total,
-      }))
-      .sort(byTotalDesc),
-    expenseByMethod: [...sumBy(expenses, (m) => m.method)]
-      .map(([method, total]) => ({ method, total }))
-      .sort(byTotalDesc),
-    history: monthRange(addMonths(month, -(HISTORY_MONTHS - 1)), month).map((m) => ({
-      month: m,
-      ...totalsOf(inMonth(m)),
-    })),
+    totalBalance: shown.reduce((sum, a) => sum + a.balance, 0),
+    accounts: shown.map((a) => ({ id: a.id, name: a.name, color: a.color, balance: a.balance })),
+    expenseByCategory,
+    incomeByCategory,
+    expenseByAccount,
+    expenseByMethod,
+    history: hist,
     upcoming,
-    upcomingTotal: upcoming.reduce((acc, u) => acc + u.installments + u.recurring + u.other, 0),
-    composition: compositionOf(expenses),
+    upcomingTotal: upcoming.reduce((sum, u) => sum + u.installments + u.recurring + u.other, 0),
+    composition: { installments, recurring, other },
   };
 }

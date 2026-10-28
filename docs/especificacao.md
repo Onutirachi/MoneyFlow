@@ -5,12 +5,12 @@ Descreve **o que** o sistema faz, em forma de requisitos verificáveis. Os detal
 - fórmulas e regras (parcelas, custos fixos, saldo) → [regras-de-negocio.md](regras-de-negocio.md);
 - o porquê de cada escolha → [adr/](adr/README.md).
 
-Escrita a partir do código da etapa 14 (2026-10-28). Se o código e esta spec divergirem, o código vale até a spec ser corrigida.
+Escrita a partir do código da etapa 14 e atualizada na etapa 15 (backend PostgreSQL), em 2026-10-28. Se o código e esta spec divergirem, o código vale até a spec ser corrigida.
 
 ## 1. Escopo
 Aplicação web de finanças pessoais para **um usuário por conta de login**: registra entradas e saídas em contas, parcela compras, lança custos fixos automaticamente e mostra um dashboard mensal.
 
-**Fora do escopo atual:** fatura de cartão (fechamento/vencimento), transferência entre contas, orçamento por categoria, exportação, compartilhamento entre usuários, backend real (o atual é mock, ver ADR 0001).
+**Fora do escopo atual:** fatura de cartão (fechamento/vencimento), transferência entre contas, orçamento por categoria, exportação, compartilhamento entre usuários.
 
 ## 2. Glossário
 | Termo | Significado |
@@ -31,7 +31,7 @@ Aplicação web de finanças pessoais para **um usuário por conta de login**: r
 ## 4. Requisitos funcionais
 
 ### RF01 — Cadastro e login
-- RF01.1 O visitante cria uma conta com nome (2–80), e-mail único e senha (≥ 6). E-mail é normalizado (trim + minúsculas).
+- RF01.1 O visitante cria uma conta com nome (2–80), e-mail único e senha (6–72). E-mail é normalizado (trim + minúsculas).
 - RF01.2 Ao se cadastrar, o usuário recebe 13 **categorias padrão** (4 de entrada e 9 de saída, ver `backend/src/services/defaults.ts`) e entra logado direto.
 - RF01.3 Login com e-mail e senha devolve um token JWT válido por 7 dias.
 - RF01.4 A sessão é restaurada ao reabrir o app (token salvo no navegador e validado em `/auth/me`).
@@ -102,11 +102,12 @@ Todos os blocos respeitam o mês selecionado e o filtro opcional por conta.
 | RNF02 | Isolamento entre usuários | Todo acesso filtra por `userId`. Recurso alheio responde 404. Coberto por teste. |
 | RNF03 | Segurança de credenciais | Senha com bcrypt (custo 10). JWT assinado. `passwordHash` nunca sai da API. |
 | RNF04 | Contrato estável | `api.md` é a fonte da verdade, e os tipos são espelhados no back e no front, para trocar o mock por um backend real. |
-| RNF05 | Integridade do arquivo | Escrita atômica do `db.json` (arquivo temporário + rename). Releitura se o arquivo mudar por fora. |
+| RNF05 | Integridade dos dados | PostgreSQL com chaves estrangeiras e `CHECK`s. Transações nas operações compostas. Trava de linha na geração de custos fixos (ADR 0008). |
 | RNF06 | Validação | Todo body/query passa por Zod, com mensagens em pt-BR. |
-| RNF07 | Qualidade | TypeScript strict, ESLint, Prettier e 22 testes de integração no backend. |
+| RNF07 | Qualidade | TypeScript strict, ESLint, Prettier e 24 testes de integração no backend (contra PostgreSQL). |
 | RNF08 | Desempenho percebido | Cache do TanStack Query (30 s). Dashboard carregado sob demanda (lazy). |
 | RNF09 | Idioma | UI, mensagens e docs em pt-BR. Código em inglês. |
+| RNF10 | Fuso horário | "Hoje" segue `America/Sao_Paulo` no backend, independente do fuso do servidor. |
 
 ## 6. Telas
 | Rota | Tela | Requisitos |
@@ -121,7 +122,7 @@ Todos os blocos respeitam o mês selecionado e o filtro opcional por conta.
 Rota desconhecida → `/`. Rotas privadas sem sessão → `/login`.
 
 ## 7. Comportamentos de borda conhecidos
-Comportamentos reais do código que não são óbvios. Os itens 1–3 estão planejados para a etapa 15 do [ROADMAP](ROADMAP.md).
+Comportamentos reais do código que não são óbvios. Os itens 1–3 estão planejados para a etapa 16 do [ROADMAP](ROADMAP.md).
 
 1. **Materialização sem limite à frente:** abrir um mês distante (ex.: 2035) em Movimentos gera de uma vez todas as ocorrências dos custos fixos sem fim até aquele mês, e elas ficam gravadas.
 2. **Mês inicial retroativo:** editar um custo fixo para um `startMonth` anterior gera as ocorrências dos meses passados que faltavam na próxima consulta. Avançar o `startMonth` não remove as ocorrências passadas.

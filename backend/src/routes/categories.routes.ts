@@ -1,28 +1,29 @@
 import { Router } from 'express';
 import {
   createCategorySchema,
-  listCategoriesQuerySchema,
+  listCategoriesQuery,
   updateCategorySchema,
-} from '../schemas/category.schema.js';
-import * as categories from '../services/categories.service.js';
-import { parse } from '../utils/validation.js';
+} from '../schemas/categories.schema.js';
+import * as service from '../services/categories.service.js';
+import { idParam, parse } from '../utils/validation.js';
 
-export const categoriesRoutes = Router();
+const router = Router();
 
-categoriesRoutes.get('/', (req, res) => {
-  const { type } = parse(listCategoriesQuerySchema, req.query);
-  res.json(categories.list(req.userId, type));
+router.get('/', async (req, res) => {
+  const { type } = parse(listCategoriesQuery, req.query);
+  res.json(await service.list(req.userId, type));
 });
-
-categoriesRoutes.post('/', (req, res) => {
-  res.status(201).json(categories.create(req.userId, parse(createCategorySchema, req.body)));
+router.post('/', async (req, res) => {
+  res.status(201).json(await service.create(req.userId, parse(createCategorySchema, req.body)));
 });
-
-categoriesRoutes.put('/:id', (req, res) => {
-  res.json(categories.update(req.userId, req.params.id, parse(updateCategorySchema, req.body)));
+router.put('/:id', async (req, res) => {
+  res.json(
+    await service.update(req.userId, idParam(req.params.id), parse(updateCategorySchema, req.body)),
+  );
 });
-
-categoriesRoutes.delete('/:id', (req, res) => {
-  categories.remove(req.userId, req.params.id);
+router.delete('/:id', async (req, res) => {
+  await service.remove(req.userId, idParam(req.params.id));
   res.status(204).end();
 });
+
+export default router;

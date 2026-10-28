@@ -6,8 +6,6 @@ dist/
 .DS_Store
 coverage/
 
-# dados do mock (gerados pelo seed)
-backend/data/db.json
 
 # config local do Claude Code
 .claude/settings.local.json

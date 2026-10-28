@@ -13,14 +13,15 @@
 ## Backend
 Fluxo de uma requisição:
 ```
-routes/x.routes.ts  →  parse(zodSchema, input)  →  services/x.service.ts  →  db/jsonDb.ts
+routes/x.routes.ts  →  parse(zodSchema, input)  →  services/x.service.ts  →  db/pool.ts (PostgreSQL)
 ```
 - **Rotas finas:** só extraem `req.userId`, `req.body` validado e chamam o service.
 - **Toda regra de negócio fica em `services/`.** Services não conhecem `req`/`res`.
 - **Validação:** todo body/query passa por um schema zod (`schemas/x.schema.ts`).
 - **Erros:** lançar `AppError(status, code, message)`; o `errorHandler` responde `{ "error": { "code": "...", "message": "..." } }`. Erros de zod → 400 `VALIDATION_ERROR` com `details`.
 - **Multiusuário:** todo acesso a dados filtra por `userId`. Recurso de outro usuário → 404 (não 403).
-- **IDs:** `crypto.randomUUID()`.
+- **IDs:** UUID gerado pelo banco (`gen_random_uuid()`). Id na URL que não é UUID → 404 (`idParam`).
+- **SQL:** sempre parametrizado (`$1, $2...`), nunca concatenar valores vindos do usuário. Operações com mais de uma escrita usam `withTx`.
 
 ## Frontend
 Fluxo:

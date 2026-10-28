@@ -15,7 +15,7 @@
 - **Quero saber o que já foi feito:** `ROADMAP.md` → abra o doc da etapa.
 - **Quero entender por que algo é assim:** `adr/`.
 - **Vou mexer no código:** leia `padroes.md` e o `CLAUDE.md` do projeto (`backend/` ou `frontend/`).
-- **Vou integrar front e back / trocar o mock pelo backend real:** `api.md`.
+- **Vou integrar front e back:** `api.md`.
 
 ## Comandos do Claude Code (`.claude/commands/`)
 | Comando | O que faz |

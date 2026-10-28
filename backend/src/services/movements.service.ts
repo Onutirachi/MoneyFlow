@@ -1,142 +1,175 @@
 import { randomUUID } from 'node:crypto';
-import { db } from '../db/jsonDb.js';
 import { notFound } from '../errors.js';
-import type {
-  CreateMovementInput,
-  ListMovementsQuery,
-  MovementScope,
-  UpdateMovementInput,
-} from '../schemas/movement.schema.js';
-import type { Movement } from '../types.js';
-import { addMonthsToDate, monthOf } from '../utils/date.js';
+import { execute, one, query, withTx } from '../db/pool.js';
+import { insertMovement, MOVEMENT_COLS, toMovement, type MovementRow } from '../db/movements.js';
+import { addMonths, addMonthsToDate, monthStart } from '../utils/date.js';
 import { splitInstallments } from '../utils/money.js';
+import { assertRefs } from './refs.js';
 import { ensureMaterialized } from './recurring.service.js';
-import { validateRefs } from './refs.js';
-
-export type PublicMovement = Omit<Movement, 'userId'>;
-
-export function present(movement: Movement): PublicMovement {
-  const { userId: _userId, ...rest } = movement;
-  return rest;
-}
+import type { Movement, MovementType, PaymentMethod } from '../types.js';
 
 const INSTALLMENT_SUFFIX = /\s+\d+\/\d+$/;
 
-export const installmentDescription = (base: string, n: number, total: number) =>
-  `${base.replace(INSTALLMENT_SUFFIX, '')} ${n}/${total}`;
+/** "Notebook" ou "Notebook 3/10" → "Notebook i/n" (o front envia a descrição atual da parcela). */
+export const installmentDescription = (base: string, i: number, n: number): string =>
+  `${base.replace(INSTALLMENT_SUFFIX, '')} ${i}/${n}`;
 
-function getOwnedMovement(userId: string, id: string): Movement {
-  const movement = db.data.movements.find((m) => m.id === id && m.userId === userId);
-  if (!movement) throw notFound('Movimento');
-  return movement;
+export interface ListFilters {
+  month: string;
+  accountId?: string | undefined;
+  type?: MovementType | undefined;
+  categoryId?: string | undefined;
+  method?: PaymentMethod | undefined;
 }
 
-function groupOf(userId: string, movement: Movement, scope: MovementScope): Movement[] {
-  if (scope === 'one' || !movement.installmentGroupId) return [movement];
-  return db.data.movements.filter(
-    (m) => m.userId === userId && m.installmentGroupId === movement.installmentGroupId,
+export async function list(userId: string, f: ListFilters): Promise<Movement[]> {
+  await ensureMaterialized(userId, f.month);
+
+  const params: unknown[] = [userId, monthStart(f.month), monthStart(addMonths(f.month, 1))];
+  const where = ['user_id = $1', 'date >= $2::date', 'date < $3::date'];
+  const add = (column: string, value: string | undefined) => {
+    if (value === undefined) return;
+    params.push(value);
+    where.push(`${column} = $${params.length}`);
+  };
+  add('account_id', f.accountId);
+  add('type', f.type);
+  add('category_id', f.categoryId);
+  add('method', f.method);
+
+  const rows = await query<MovementRow>(
+    `SELECT ${MOVEMENT_COLS} FROM movements WHERE ${where.join(' AND ')}
+      ORDER BY date DESC, created_at DESC, installment_number`,
+    params,
   );
+  return rows.map(toMovement);
 }
 
-export function list(userId: string, query: ListMovementsQuery): PublicMovement[] {
-  ensureMaterialized(userId, query.month);
-  return db.data.movements
-    .filter(
-      (m) =>
-        m.userId === userId &&
-        monthOf(m.date) === query.month &&
-        (!query.accountId || m.accountId === query.accountId) &&
-        (!query.type || m.type === query.type) &&
-        (!query.categoryId || m.categoryId === query.categoryId) &&
-        (!query.method || m.method === query.method),
-    )
-    .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
-    .map(present);
+export interface CreateInput {
+  type: MovementType;
+  description: string;
+  amount: number;
+  date: string;
+  accountId: string;
+  method: PaymentMethod;
+  categoryId: string;
+  installments?: number | undefined;
 }
 
-export function create(userId: string, input: CreateMovementInput): PublicMovement[] {
-  validateRefs(userId, input);
-  const { installments, ...fields } = input;
-  const createdAt = new Date().toISOString();
-
-  const base: Omit<Movement, 'id' | 'amount' | 'date' | 'description'> = {
+export async function create(userId: string, input: CreateInput): Promise<Movement[]> {
+  await assertRefs(userId, input);
+  const base = {
     userId,
-    type: fields.type,
-    accountId: fields.accountId,
-    method: fields.method,
-    categoryId: fields.categoryId,
-    installmentGroupId: null,
-    installmentNumber: null,
-    installmentTotal: null,
-    recurringId: null,
-    createdAt,
+    type: input.type,
+    accountId: input.accountId,
+    method: input.method,
+    categoryId: input.categoryId,
   };
 
-  let movements: Movement[];
-  if (installments) {
+  return withTx(async (c) => {
+    const n = input.installments;
+    if (!n) {
+      return [
+        await insertMovement(c, {
+          ...base,
+          description: input.description,
+          amount: input.amount,
+          date: input.date,
+        }),
+      ];
+    }
     const groupId = randomUUID();
-    movements = splitInstallments(fields.amount, installments).map((amount, i) => ({
-      ...base,
-      id: randomUUID(),
-      description: installmentDescription(fields.description, i + 1, installments),
-      amount,
-      date: addMonthsToDate(fields.date, i),
-      installmentGroupId: groupId,
-      installmentNumber: i + 1,
-      installmentTotal: installments,
-    }));
-  } else {
-    movements = [
-      {
-        ...base,
-        id: randomUUID(),
-        description: fields.description,
-        amount: fields.amount,
-        date: fields.date,
-      },
-    ];
-  }
-
-  db.data.movements.push(...movements);
-  db.save();
-  return movements.map(present);
+    const amounts = splitInstallments(input.amount, n);
+    const out: Movement[] = [];
+    for (let i = 0; i < n; i++) {
+      out.push(
+        await insertMovement(c, {
+          ...base,
+          description: installmentDescription(input.description, i + 1, n),
+          amount: amounts[i] ?? 0,
+          date: addMonthsToDate(input.date, i),
+          installmentGroupId: groupId,
+          installmentNumber: i + 1,
+          installmentTotal: n,
+        }),
+      );
+    }
+    return out;
+  });
 }
 
-export function update(
+export interface UpdateInput {
+  description: string;
+  amount: number;
+  date: string;
+  accountId: string;
+  method: PaymentMethod;
+  categoryId: string;
+}
+
+async function findOwn(userId: string, id: string): Promise<MovementRow> {
+  const row = one(
+    await query<MovementRow>(
+      `SELECT ${MOVEMENT_COLS} FROM movements WHERE id = $1 AND user_id = $2`,
+      [id, userId],
+    ),
+  );
+  if (!row) throw notFound('Movimento não encontrado');
+  return row;
+}
+
+export async function update(
   userId: string,
   id: string,
-  input: UpdateMovementInput,
-  scope: MovementScope,
-): PublicMovement[] {
-  const movement = getOwnedMovement(userId, id);
-  validateRefs(userId, { ...input, type: movement.type });
-  const targets = groupOf(userId, movement, scope);
+  scope: 'one' | 'group',
+  input: UpdateInput,
+): Promise<Movement[]> {
+  const current = await findOwn(userId, id);
+  await assertRefs(userId, { ...input, type: current.type });
 
-  if (targets.length === 1) {
-    Object.assign(movement, input);
-  } else {
-    // Em grupo: valor e data de cada parcela são preservados (regras-de-negocio.md).
-    for (const m of targets) {
-      Object.assign(m, {
-        description: installmentDescription(
-          input.description,
-          m.installmentNumber!,
-          m.installmentTotal!,
-        ),
-        accountId: input.accountId,
-        method: input.method,
-        categoryId: input.categoryId,
-      });
-    }
+  if (scope === 'group' && current.installment_group_id) {
+    // valor e data são ignorados; o sufixo i/n é reaplicado sobre a descrição base
+    const base = input.description.replace(INSTALLMENT_SUFFIX, '');
+    const rows = await query<MovementRow>(
+      `UPDATE movements
+          SET description = $3::text || ' ' || installment_number || '/' || installment_total,
+              account_id = $4, method = $5, category_id = $6
+        WHERE installment_group_id = $1 AND user_id = $2
+        RETURNING ${MOVEMENT_COLS}`,
+      [current.installment_group_id, userId, base, input.accountId, input.method, input.categoryId],
+    );
+    return rows
+      .sort((a, b) => (a.installment_number ?? 0) - (b.installment_number ?? 0))
+      .map(toMovement);
   }
 
-  db.save();
-  return targets.map(present);
+  const rows = await query<MovementRow>(
+    `UPDATE movements
+        SET description = $3, amount = $4, date = $5, account_id = $6, method = $7, category_id = $8
+      WHERE id = $1 AND user_id = $2
+      RETURNING ${MOVEMENT_COLS}`,
+    [
+      id,
+      userId,
+      input.description,
+      input.amount,
+      input.date,
+      input.accountId,
+      input.method,
+      input.categoryId,
+    ],
+  );
+  return rows.map(toMovement);
 }
 
-export function remove(userId: string, id: string, scope: MovementScope): void {
-  const movement = getOwnedMovement(userId, id);
-  const targets = new Set(groupOf(userId, movement, scope));
-  db.data.movements = db.data.movements.filter((m) => !targets.has(m));
-  db.save();
+export async function remove(userId: string, id: string, scope: 'one' | 'group'): Promise<void> {
+  const current = await findOwn(userId, id);
+  if (scope === 'group' && current.installment_group_id) {
+    await execute('DELETE FROM movements WHERE installment_group_id = $1 AND user_id = $2', [
+      current.installment_group_id,
+      userId,
+    ]);
+    return;
+  }
+  await execute('DELETE FROM movements WHERE id = $1 AND user_id = $2', [id, userId]);
 }

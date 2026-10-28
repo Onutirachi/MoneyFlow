@@ -1,19 +1,21 @@
 import { Router } from 'express';
-import { auth } from '../middleware/auth.js';
+import { requireAuth } from '../middleware/auth.js';
 import { loginSchema, registerSchema } from '../schemas/auth.schema.js';
-import * as authService from '../services/auth.service.js';
+import * as service from '../services/auth.service.js';
 import { parse } from '../utils/validation.js';
 
-export const authRoutes = Router();
+const router = Router();
 
-authRoutes.post('/register', (req, res) => {
-  res.status(201).json(authService.register(parse(registerSchema, req.body)));
+router.post('/register', async (req, res) => {
+  res.status(201).json(await service.register(parse(registerSchema, req.body)));
 });
 
-authRoutes.post('/login', (req, res) => {
-  res.json(authService.login(parse(loginSchema, req.body)));
+router.post('/login', async (req, res) => {
+  res.json(await service.login(parse(loginSchema, req.body)));
 });
 
-authRoutes.get('/me', auth, (req, res) => {
-  res.json({ user: authService.me(req.userId) });
+router.get('/me', requireAuth, async (req, res) => {
+  res.json({ user: await service.me(req.userId) });
 });
+
+export default router;

@@ -1,9 +1,7 @@
 import { z } from 'zod';
-import { idSchema, monthSchema } from './common.schema.js';
+import { monthSchema, optionalFilter, uuid } from './common.js';
 
-export const dashboardQuerySchema = z.object({
+export const dashboardQuery = z.object({
   month: monthSchema,
-  accountId: idSchema.optional(),
+  accountId: optionalFilter(uuid),
 });
-
-export type DashboardQuery = z.infer<typeof dashboardQuerySchema>;

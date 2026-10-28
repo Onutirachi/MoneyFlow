@@ -1,7 +1,7 @@
 import type { Category } from '../types.js';
 
 /** Categorias criadas automaticamente para todo novo usuário. */
-export const DEFAULT_CATEGORIES: Omit<Category, 'id' | 'userId'>[] = [
+export const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   { name: 'Salário', type: 'ENTRADA', color: '#16a34a' },
   { name: 'Freelance', type: 'ENTRADA', color: '#0d9488' },
   { name: 'Investimentos', type: 'ENTRADA', color: '#2563eb' },
