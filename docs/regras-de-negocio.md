@@ -34,4 +34,4 @@
 ## Dashboard / comparação mensal
 - Resultado do mês = entradas − saídas (inclui previstos do mês).
 - Comparação com o mês anterior: variação absoluta e percentual de entradas, saídas e resultado. **Economizou** = gastou menos que no mês anterior (saídas menores) — a UI mostra em verde.
-- Compromissos futuros = soma de parcelas e custos fixos dos próximos 3 meses.
+- Compromissos futuros = soma de **todas as saídas** já lançadas nos próximos 3 meses, separadas por origem: parcelas, custos fixos e avulsos (saídas previstas lançadas à mão).

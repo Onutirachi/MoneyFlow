@@ -2,6 +2,7 @@
 
 | Documento | Para que serve |
 |---|---|
+| [especificacao.md](especificacao.md) | Requisitos funcionais e não funcionais, telas, comportamentos de borda |
 | [ROADMAP.md](ROADMAP.md) | Lista de etapas e status atual |
 | [padroes.md](padroes.md) | Padrões de código, estrutura de pastas, git |
 | [api.md](api.md) | Contrato da API — rotas, payloads, erros |

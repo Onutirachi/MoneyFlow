@@ -56,6 +56,7 @@ npm test          # 22 testes de integração
 
 ## Documentação
 Tudo está em [`docs/`](docs/README.md):
+- [Especificação](docs/especificacao.md): requisitos funcionais e não funcionais
 - [ROADMAP](docs/ROADMAP.md): as 14 etapas e o que cada uma entregou
 - [Diário de etapas](docs/etapas/): o que foi feito e como testar
 - [Contrato da API](docs/api.md) e [regras de negócio](docs/regras-de-negocio.md)
